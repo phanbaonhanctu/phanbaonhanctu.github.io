@@ -55,24 +55,28 @@ function startTOTP() {
         return;
     }
 
-    if (intervalID) clearInterval(intervalID); // clear old interval if any
+    // 🧹 Reset trạng thái cũ
+    if (intervalID) clearInterval(intervalID);
+    $("#totp").text("------");
+    $("#timeLeft").text("--");
 
     async function updateTOTP() {
         const now = Math.floor(Date.now() / 1000);
         const secondsRemaining = 30 - (now % 30);
         $("#timeLeft").text(secondsRemaining);
 
+        // Cập nhật mã khi bước thời gian mới bắt đầu
         if (secondsRemaining === 30 || $("#totp").text() === "------") {
             const code = await generateTOTP(secret);
             $("#totp").text(code);
         }
     }
 
-    updateTOTP(); // initial call
-    intervalID = setInterval(updateTOTP, 1000); // update every second
+    updateTOTP();
+    intervalID = setInterval(updateTOTP, 1000);
 }
 
-// 🧩 Thêm tính năng copy vào clipboard khi click vào mã TOTP
+// 🧩 Tính năng copy vào clipboard + thông báo toast
 $(document).ready(function () {
     $("#totp").css("cursor", "pointer");
 
@@ -81,9 +85,13 @@ $(document).ready(function () {
         if (!code || code === "------") return;
 
         navigator.clipboard.writeText(code).then(() => {
-            // Hiển thị thông báo nhỏ
+            // Xóa toast cũ nếu có
+            $(".copy-toast").remove();
+
+            // Tạo toast mới
             const toast = $("<div>")
-                .text("Đã sao chép mã!")
+                .addClass("copy-toast")
+                .text("✅ Đã sao chép mã!")
                 .css({
                     position: "fixed",
                     bottom: "20px",
@@ -100,7 +108,9 @@ $(document).ready(function () {
                 .appendTo("body");
 
             setTimeout(() => toast.css("opacity", 1), 50);
-            setTimeout(() => toast.fadeOut(500, () => toast.remove()), 2000);
+            setTimeout(() => {
+                toast.fadeOut(500, () => toast.remove());
+            }, 2000);
         });
     });
 });
