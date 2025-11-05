@@ -49,7 +49,7 @@ async function generateTOTP(secretBase32) {
 let intervalID = null;
 
 function startTOTP() {
-    const secret = $("#secret").val().trim().replace(/\s+/g, '');
+    const secret = $("#myInput").val().trim().replace(/\s+/g, '');
     if (!secret) {
         alert("Vui lòng nhập secret.");
         return;
@@ -71,3 +71,36 @@ function startTOTP() {
     updateTOTP(); // initial call
     intervalID = setInterval(updateTOTP, 1000); // update every second
 }
+
+// 🧩 Thêm tính năng copy vào clipboard khi click vào mã TOTP
+$(document).ready(function () {
+    $("#totp").css("cursor", "pointer");
+
+    $("#totp").on("click", function () {
+        const code = $(this).text().trim();
+        if (!code || code === "------") return;
+
+        navigator.clipboard.writeText(code).then(() => {
+            // Hiển thị thông báo nhỏ
+            const toast = $("<div>")
+                .text("Đã sao chép mã!")
+                .css({
+                    position: "fixed",
+                    bottom: "20px",
+                    right: "20px",
+                    background: "#28a745",
+                    color: "#fff",
+                    padding: "10px 20px",
+                    borderRadius: "10px",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+                    zIndex: 9999,
+                    opacity: 0,
+                    transition: "opacity 0.3s"
+                })
+                .appendTo("body");
+
+            setTimeout(() => toast.css("opacity", 1), 50);
+            setTimeout(() => toast.fadeOut(500, () => toast.remove()), 2000);
+        });
+    });
+});
