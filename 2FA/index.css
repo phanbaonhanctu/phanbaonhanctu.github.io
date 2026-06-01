@@ -1,0 +1,40 @@
+body {
+    background: #181818;
+}
+
+.card {
+    border: none;
+    border-radius: 20px;
+}
+
+textarea {
+    resize: none;
+}
+
+.otp-box {
+
+    text-align: center;
+
+    font-size: 38px;
+
+    font-weight: 700;
+
+    letter-spacing: 8px;
+
+    background: #f3f3f3;
+
+    font-family: Consolas, monospace;
+}
+
+#countdown {
+
+    font-size: 18px;
+
+    font-weight: 600;
+
+    color: #0d6efd;
+}
+
+#status {
+    min-height: 25px;
+}

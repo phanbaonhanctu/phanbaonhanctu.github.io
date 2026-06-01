@@ -1,0 +1,42 @@
+body {
+    background: #181818;
+}
+
+.container {
+
+    max-width: 1800px;
+}
+
+.card {
+
+    border: none;
+
+    border-radius: 18px;
+}
+
+.code-area {
+
+    height: 72vh;
+
+    min-height: 700px;
+
+    resize: vertical;
+
+    font-size: 15px;
+
+    line-height: 1.5;
+
+    font-family:
+        Consolas,
+        monospace;
+}
+
+#outputJson {
+
+    background: #f5f5f5;
+}
+
+#status {
+
+    min-height: 28px;
+}

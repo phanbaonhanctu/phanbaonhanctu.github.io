@@ -1,0 +1,54 @@
+body {
+
+    background: #181818;
+}
+
+.container-fluid {
+
+    max-width: 1800px;
+}
+
+.card {
+
+    border: none;
+
+    border-radius: 18px;
+}
+
+.editor {
+
+    min-height: 420px;
+
+    font-size: 16px;
+
+    line-height: 1.6;
+
+    font-family:
+        Consolas,
+        monospace;
+}
+
+.stat-card {
+
+    background: #222;
+
+    color: #fff;
+
+    border-radius: 10px;
+
+    padding: 4px;
+}
+
+.stat-title {
+
+    opacity: .7;
+
+    font-size: 14px;
+}
+
+.stat-value {
+
+    font-size: 28px;
+
+    font-weight: 700;
+}

@@ -1,0 +1,21 @@
+body {
+    background: #181818;
+}
+
+.card {
+    border: none;
+    border-radius: 20px;
+}
+
+textarea {
+    resize: none;
+}
+
+#result {
+    background: #f5f5f5;
+    font-family: Consolas, monospace;
+}
+
+#status {
+    min-height: 25px;
+}

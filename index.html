@@ -3,10 +3,10 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dev Tools Hub</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- Bootstrap -->
+    <title>Dev Toolbox</title>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <link rel="stylesheet" href="index.css">
@@ -14,65 +14,183 @@
 
 <body>
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow">
+    <nav class="navbar navbar-dark bg-dark shadow">
+
         <div class="container">
 
-            <a class="navbar-brand fw-bold" href="#">
-                ⚡ Dev Tools
+            <a class="navbar-brand fw-bold" href="./">
+
+                ⚡ Dev Toolbox
+
             </a>
 
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menu">
-
-                <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <div class="collapse navbar-collapse" id="menu">
-
-                <ul class="navbar-nav ms-auto">
-
-                    <li class="nav-item">
-                        <a class="nav-link active" href="./">
-                            Home
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link" href="./md5/">
-                            MD5
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link" href="./2fa/">
-                            2FA
-                        </a>
-                    </li>
-
-                </ul>
-
-            </div>
         </div>
+
     </nav>
 
     <section class="hero">
 
-        <div class="container text-center">
+        <div class="container">
 
-            <h1 class="display-4 fw-bold mb-3">
-                🚧 Building Personal Dev Tools
-            </h1>
+            <div class="text-center mb-5">
 
-            <p class="lead text-light mb-4">
-                Workspace đang được xây dựng...
-            </p>
+                <h1 class="display-4 fw-bold">
 
-            <div class="building-loader"></div>
+                    Personal Developer Toolbox
+
+                </h1>
+
+                <p class="lead text-light">
+
+                    Bộ công cụ phục vụ lập trình cá nhân
+
+                </p>
+
+            </div>
+
+            <div class="row g-4">
+
+                <!-- MD5 -->
+
+                <div class="col-lg-4 col-md-6">
+
+                    <div class="tool-card">
+
+                        <h4>🔐 MD5 Generator</h4>
+
+                        <p>
+                            Generate MD5 hash +
+                            auto clipboard
+                        </p>
+
+                        <a href="./md5/" target="_blank" class="btn btn-primary">
+
+                            Open Tool
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+                <!-- 2FA -->
+
+                <div class="col-lg-4 col-md-6">
+
+                    <div class="tool-card">
+
+                        <h4>📱 2FA Generator</h4>
+
+                        <p>
+                            Generate OTP/TOTP
+                            from secret key
+                        </p>
+
+                        <a href="./2fa/" target="_blank" class="btn btn-success">
+
+                            Open Tool
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+                <!-- CASE -->
+
+                <div class="col-lg-4 col-md-6">
+
+                    <div class="tool-card">
+
+                        <h4>🔤 Case Converter</h4>
+
+                        <p>
+                            Format naming styles for Java / JP projects
+                        </p>
+
+                        <a href="./case/" target="_blank" class="btn btn-dark">
+
+                            Open Tool
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+                <!-- SQL -->
+
+                <div class="col-lg-4 col-md-6">
+
+                    <div class="tool-card">
+
+                        <h4>🗄️ SQL Formatter</h4>
+
+                        <p>
+                            Beautify / Format / Minify SQL
+                        </p>
+
+                        <a href="./sql/" target="_blank" class="btn btn-secondary">
+
+                            Open Tool
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+                <!-- JSON -->
+
+                <div class="col-lg-4 col-md-6">
+
+                    <div class="tool-card">
+
+                        <h4>📄 JSON Formatter</h4>
+
+                        <p>
+                            Format / Validate / Minify JSON
+                        </p>
+
+                        <a href="./json/" target="_blank" class="btn btn-info">
+
+                            Open Tool
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+                <!-- WORD COUNTER -->
+
+                <div class="col-lg-4 col-md-6">
+
+                    <div class="tool-card">
+
+                        <h4>🈶 Word Counter JP</h4>
+
+                        <p>
+                            1-byte / 2-byte /
+                            Hiragana / Katakana / Kanji
+                        </p>
+
+                        <a href="./word-counter/" target="_blank" class="btn btn-dark">
+
+                            Open Tool
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
 
         </div>
 
     </section>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
     <script src="index.js"></script>
 
 </body>
