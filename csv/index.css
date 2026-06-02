@@ -1,0 +1,127 @@
+body {
+
+    background: #181818;
+
+    overflow: auto;
+}
+
+.container-fluid {
+
+    max-width: 100%;
+
+    padding: 14px 18px;
+}
+
+.card {
+
+    border: none;
+
+    border-radius: 14px;
+}
+
+.card-body {
+
+    display: flex;
+
+    flex-direction: column;
+}
+
+.toolbar {
+
+    display: flex;
+
+    gap: 10px;
+
+    flex-wrap: wrap;
+
+    align-items: center;
+}
+
+.toolbar input,
+.toolbar select {
+
+    flex: 1;
+
+    min-width: 180px;
+}
+
+.warning {
+
+    color: #ff6868;
+
+    font-weight: 700;
+}
+
+.stats {
+
+    color: #ccc;
+}
+
+.table-wrapper {
+
+    margin-top: 16px;
+
+    overflow: auto;
+
+    height: 50vh;
+
+    max-height: 50vh;
+
+    /* giữ scrollbar luôn nhìn thấy */
+
+    .table-wrapper::-webkit-scrollbar {
+
+        height: 14px;
+
+        width: 14px;
+    }
+
+    table {
+
+        min-width: max-content;
+
+        border-collapse: collapse;
+    }
+
+    th,
+    td {
+
+        border: 1px solid #444;
+
+        padding: 6px 10px;
+
+        white-space: nowrap;
+
+        font-size: 14px;
+
+        background: #fafafa;
+
+        color: #111;
+    }
+
+    th {
+
+        font-weight: 700;
+
+        background: #ececec;
+    }
+
+    td[contenteditable] {
+
+        outline: none;
+    }
+
+    td:focus {
+
+        background: #fff7cc;
+    }
+
+    /* responsive nhỏ hơn */
+
+    @media(max-width:1200px) {
+
+        .table-wrapper {
+
+            max-height: 60vh;
+        }
+    }
