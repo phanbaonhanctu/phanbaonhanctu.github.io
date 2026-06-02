@@ -164,12 +164,33 @@ function validate() {
         `Rows: ${currentData.length} | Columns: ${colCount}`;
 }
 
-function parseCSV(text) {
+function parseCSV(
+    text,
+    delimiter = ','
+) {
 
-    let rows = [];
+    if (!text)
+        return [];
+
+    /*
+        remove BOM
+    */
+
+    if (
+        text.charCodeAt(0)
+        === 0xFEFF
+    ) {
+
+        text =
+            text.slice(1);
+    }
+
+    const rows = [];
+
     let row = [];
     let cell = '';
-    let quote = false;
+
+    let inQuote = false;
 
     for (
         let i = 0;
@@ -178,58 +199,131 @@ function parseCSV(text) {
     ) {
 
         const c = text[i];
-        const next = text[i + 1];
 
-        if (quote) {
+        const next =
+            text[i + 1];
+
+        /*
+            inside quoted field
+        */
+
+        if (inQuote) {
 
             if (
-                c == '"' &&
-                next == '"'
+                c === '"' &&
+                next === '"'
             ) {
 
                 cell += '"';
+
                 i++;
+
+                continue;
             }
 
-            else if (c == '"') {
+            if (c === '"') {
 
-                quote = false;
+                inQuote = false;
+
+                continue;
             }
 
-            else {
+            cell += c;
 
-                cell += c;
-            }
+            continue;
         }
 
-        else {
+        /*
+            opening quote
+        */
 
-            if (c == '"') {
+        if (c === '"') {
 
-                quote = true;
-            }
+            inQuote = true;
 
-            else if (c == ',') {
-
-                row.push(cell);
-                cell = '';
-            }
-
-            else if (c == '\n') {
-
-                row.push(cell);
-
-                rows.push(row);
-
-                row = [];
-                cell = '';
-            }
-
-            else if (c != '\r') {
-
-                cell += c;
-            }
+            continue;
         }
+
+        /*
+            delimiter
+        */
+
+        if (
+            c === delimiter
+        ) {
+
+            row.push(cell);
+
+            cell = '';
+
+            continue;
+        }
+
+        /*
+            CRLF
+        */
+
+        if (
+            c === '\r' &&
+            next === '\n'
+        ) {
+
+            row.push(cell);
+
+            rows.push(row);
+
+            row = [];
+            cell = '';
+
+            i++;
+
+            continue;
+        }
+
+        /*
+            LF only
+        */
+
+        if (c === '\n') {
+
+            row.push(cell);
+
+            rows.push(row);
+
+            row = [];
+            cell = '';
+
+            continue;
+        }
+
+        /*
+            standalone CR
+        */
+
+        if (c === '\r') {
+
+            row.push(cell);
+
+            rows.push(row);
+
+            row = [];
+            cell = '';
+
+            continue;
+        }
+
+        cell += c;
+    }
+
+    /*
+        unfinished quote detection
+    */
+
+    if (inQuote) {
+
+        console.warn(
+            'CSV Warning: unclosed quote'
+        );
     }
 
     row.push(cell);
@@ -237,12 +331,15 @@ function parseCSV(text) {
     rows.push(row);
 
     return rows.filter(
-        r =>
 
-            !r.every(
-                c =>
-                    c.trim() === ''
+        row =>
+
+            !(
+                row.length === 1
+                &&
+                row[0] === ''
             )
+
     );
 }
 
@@ -333,19 +430,88 @@ function renderTable() {
     );
 }
 
-function escapeCSV(cell) {
+function escapeCSV(
+    cell,
+    delimiter = ','
+) {
+
+    if (
+        cell === null ||
+        cell === undefined
+    ) {
+
+        return '';
+    }
 
     let s =
-        String(cell ?? '');
+        String(cell);
+
+    /*
+        normalize newline
+    */
+
+    s = s.replace(
+        /\r\n/g,
+        '\n'
+    );
+
+    s = s.replace(
+        /\r/g,
+        '\n'
+    );
+
+    /*
+        Excel Formula Injection
+    */
+
+    if (
+        /^[=+\-@]/.test(
+            s
+        )
+    ) {
+
+        s = "'" + s;
+    }
+
+    /*
+        RFC4180 quote escape
+    */
 
     s = s.replace(
         /"/g,
         '""'
     );
 
-    if (
-        s.includes(',') ||
+    /*
+        need quoting ?
+    */
+
+    const needQuote =
+
+        s.includes(
+            delimiter
+        )
+
+        ||
+
+        s.includes('"')
+
+        ||
+
         s.includes('\n')
+
+        ||
+
+        s.includes('\t')
+
+        ||
+
+        /^\s|\s$/.test(
+            s
+        );
+
+    if (
+        needQuote
     ) {
 
         s = `"${s}"`;
@@ -356,18 +522,31 @@ function escapeCSV(cell) {
 
 function downloadCSV() {
 
+    const delimiter = ',';
+
     const csvContent =
 
         currentData
 
             .map(
+
                 row =>
 
                     row.map(
-                        escapeCSV
+
+                        cell =>
+
+                            escapeCSV(
+                                cell,
+                                delimiter
+                            )
+
                     )
 
-                        .join(',')
+                        .join(
+                            delimiter
+                        )
+
             )
 
             .join('\r\n');
@@ -377,69 +556,86 @@ function downloadCSV() {
 
     let bytes;
 
-    if (mode === "UTF8") {
+    switch (mode) {
 
-        bytes =
-            new TextEncoder()
-                .encode(
-                    csvContent
-                );
-    }
+        case 'UTF8':
 
-    else if (
-        mode === "UTF8_BOM"
-    ) {
+            bytes =
 
-        const body =
+                new TextEncoder()
 
-            new TextEncoder()
-
-                .encode(
-                    csvContent
-                );
-
-        bytes =
-            new Uint8Array(
-
-                [
-                    0xEF,
-                    0xBB,
-                    0xBF,
-                    ...body
-                ]
-            );
-    }
-
-    else {
-
-        let target =
-
-            mode === "SJIS"
-
-                ? 'SJIS'
-
-                : 'EUCJP';
-
-        const encoded =
-
-            Encoding.convert(
-
-                Encoding
-                    .stringToCode(
+                    .encode(
                         csvContent
-                    ),
+                    );
 
-                {
-                    to: target,
+            break;
 
-                    from: 'UNICODE'
-                }
+        case 'UTF8_BOM':
+
+            {
+
+                const body =
+
+                    new TextEncoder()
+
+                        .encode(
+                            csvContent
+                        );
+
+                bytes =
+
+                    new Uint8Array(
+
+                        [
+                            0xEF,
+                            0xBB,
+                            0xBF,
+                            ...body
+                        ]
+
+                    );
+            }
+
+            break;
+
+        case 'SJIS':
+
+        case 'EUCJP':
+
+            {
+
+                const encoded =
+
+                    Encoding.convert(
+
+                        Encoding
+                            .stringToCode(
+                                csvContent
+                            ),
+
+                        {
+                            to: mode,
+
+                            from: 'UNICODE'
+                        }
+                    );
+
+                bytes =
+
+                    new Uint8Array(
+                        encoded
+                    );
+            }
+
+            break;
+
+        default:
+
+            alert(
+                'Unsupported encoding'
             );
 
-        bytes =
-            new Uint8Array(
-                encoded
-            );
+            return;
     }
 
     const blob =
@@ -450,7 +646,7 @@ function downloadCSV() {
 
             {
                 type:
-                    'text/csv'
+                    `text/csv;charset=${mode}`
             }
         );
 
@@ -461,18 +657,27 @@ function downloadCSV() {
         );
 
     const a =
-
         document.createElement(
-            "a"
+            'a'
         );
 
     a.href = url;
 
     a.download =
 
-        `csv_${Date.now()}.csv`;
+        `csv_${Date.now()
+        }.csv`;
+
+    document.body
+        .appendChild(a);
 
     a.click();
+
+    a.remove();
+
+    URL.revokeObjectURL(
+        url
+    );
 }
 
 function clearData() {
