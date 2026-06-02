@@ -36,3 +36,109 @@ body {
 
     opacity: .65;
 }
+
+/* ---------- TOOL BUTTONS ---------- */
+
+.tool-btn {
+
+    color: #fff;
+
+    border: none;
+
+    font-weight: 700;
+
+    transition: .18s;
+
+    min-width: 140px;
+}
+
+.tool-btn:hover {
+
+    transform: translateY(-2px);
+
+    color: #fff;
+}
+
+/* CSV */
+
+.btn-csv {
+
+    background: #00B894;
+}
+
+.btn-csv:hover {
+
+    background: #00A382;
+}
+
+/* MD5 */
+
+.btn-md5 {
+
+    background: #6C5CE7;
+}
+
+.btn-md5:hover {
+
+    background: #5848d6;
+}
+
+/* 2FA */
+
+.btn-2fa {
+
+    background: #E17055;
+}
+
+.btn-2fa:hover {
+
+    background: #cf5e44;
+}
+
+/* CASE */
+
+.btn-case {
+
+    background: #0984E3;
+}
+
+.btn-case:hover {
+
+    background: #0673c9;
+}
+
+/* SQL */
+
+.btn-sql {
+
+    background: #F39C12;
+}
+
+.btn-sql:hover {
+
+    background: #db8b0c;
+}
+
+/* JSON */
+
+.btn-json {
+
+    background: #16A085;
+}
+
+.btn-json:hover {
+
+    background: #11856f;
+}
+
+/* WORD COUNTER */
+
+.btn-word {
+
+    background: #D63031;
+}
+
+.btn-word:hover {
+
+    background: #bb2324;
+}
