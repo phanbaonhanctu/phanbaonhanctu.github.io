@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tóm tắt HTML và CSS: từ cơ bản đến nâng cao</title>
+  <style>
+    :root {
+      --bg: #f1f5fb;
+      --card: #fff;
+      --text: #1d2433;
+      --mut: #5d6679;
+      --line: #dbe3f0;
+      --code: #f4f6fb;
+      --c: #0b9a76;
+      --cb: #e1f6ef;
+      --m: #d97706;
+      --mb: #fdf0d9;
+      --a: #7c3aed;
+      --ab: #efe7fe;
+      --k: #c026d3;
+      --s: #0b8a5f;
+      --n: #d97706;
+      --cm: #8a93a6;
+      --p: #2563eb;
+      --h: #e34c26;
+      --ss: #2965f1
+    }
+
+    @media (prefers-color-scheme:dark) {
+      :root {
+        --bg: #0f1420;
+        --card: #182033;
+        --text: #e8ecf5;
+        --mut: #9aa5bd;
+        --line: #2a3550;
+        --code: #0f1626;
+        --c: #34d3a8;
+        --cb: #12332c;
+        --m: #fbbf24;
+        --mb: #3a2d10;
+        --a: #a78bfa;
+        --ab: #2a2150;
+        --k: #f0abfc;
+        --s: #6ee7b7;
+        --n: #fbbf24;
+        --cm: #6f7a93;
+        --p: #7dd3fc;
+        --h: #fb923c;
+        --ss: #60a5fa
+      }
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 16px/1.6 system-ui, "Segoe UI", Roboto, sans-serif
+    }
+
+    header {
+      background: linear-gradient(100deg, #e34c26, #d97706 45%, #2965f1);
+      color: #fff;
+      padding: 28px 20px 22px
+    }
+
+    header h1 {
+      margin: 0 0 4px;
+      font-size: clamp(24px, 4vw, 36px)
+    }
+
+    header p {
+      margin: 0;
+      opacity: .95
+    }
+
+    .bar {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: var(--card);
+      border-bottom: 1px solid var(--line);
+      padding: 10px 16px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center
+    }
+
+    .bar .g {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap
+    }
+
+    .bar .sep {
+      width: 1px;
+      height: 24px;
+      background: var(--line)
+    }
+
+    .bar button,
+    .bar input {
+      font: inherit;
+      font-size: 14px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: var(--text);
+      padding: 5px 13px
+    }
+
+    .bar button {
+      cursor: pointer
+    }
+
+    .bar button.on {
+      border-color: transparent;
+      color: #fff;
+      background: #475569
+    }
+
+    .bar button[data-t=h].on {
+      background: var(--h)
+    }
+
+    .bar button[data-t=s].on {
+      background: var(--ss)
+    }
+
+    .bar button[data-l=c].on {
+      background: var(--c);
+      color: #06231b
+    }
+
+    .bar button[data-l=m].on {
+      background: var(--m);
+      color: #2b1a00
+    }
+
+    .bar button[data-l=a].on {
+      background: var(--a)
+    }
+
+    .bar input {
+      flex: 1;
+      min-width: 140px;
+      max-width: 260px;
+      margin-left: auto
+    }
+
+    .wrap {
+      display: flex;
+      gap: 24px;
+      max-width: 1150px;
+      margin: 0 auto;
+      padding: 20px 16px
+    }
+
+    aside {
+      width: 215px;
+      flex: none;
+      position: sticky;
+      top: 64px;
+      align-self: flex-start;
+      max-height: calc(100vh - 80px);
+      overflow: auto;
+      font-size: 14px
+    }
+
+    aside h4 {
+      margin: 12px 0 4px;
+      font-size: 14px
+    }
+
+    aside a {
+      display: block;
+      padding: 3px 8px;
+      color: var(--text);
+      text-decoration: none;
+      border-radius: 6px;
+      border-left: 3px solid var(--l)
+    }
+
+    aside a:hover {
+      background: var(--card)
+    }
+
+    main {
+      flex: 1;
+      min-width: 0
+    }
+
+    .lvl {
+      margin: 26px 0 12px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 20px;
+      font-weight: 700;
+      background: var(--lb);
+      color: var(--l)
+    }
+
+    .lvl small {
+      display: block;
+      font-weight: 400;
+      font-size: 14px;
+      color: var(--mut)
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-left: 6px solid var(--l);
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin: 0 0 14px
+    }
+
+    .card h3 {
+      margin: 0 0 6px;
+      font-size: 18px;
+      color: var(--l)
+    }
+
+    .badge {
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+      border-radius: 6px;
+      padding: 1px 8px;
+      margin-right: 8px;
+      vertical-align: 2px
+    }
+
+    .badge.h {
+      background: var(--h)
+    }
+
+    .badge.s {
+      background: var(--ss)
+    }
+
+    .card p {
+      margin: 4px 0 8px;
+      color: var(--mut)
+    }
+
+    .tip {
+      background: var(--lb);
+      border-radius: 8px;
+      padding: 6px 10px;
+      margin: 8px 0 0;
+      font-size: 14px
+    }
+
+    .cb {
+      position: relative;
+      margin: 8px 0 0
+    }
+
+    pre {
+      margin: 0;
+      padding: 12px 14px;
+      background: var(--code);
+      border-radius: 8px;
+      overflow-x: auto;
+      font: 13.5px/1.55 ui-monospace, Consolas, Menlo, monospace
+    }
+
+    pre b {
+      font-weight: 400;
+      color: var(--k)
+    }
+
+    pre i {
+      font-style: normal;
+      color: var(--s)
+    }
+
+    pre u {
+      text-decoration: none;
+      color: var(--n)
+    }
+
+    pre em {
+      font-style: normal;
+      color: var(--cm)
+    }
+
+    pre s {
+      text-decoration: none;
+      color: var(--p)
+    }
+
+    .cp {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      font-size: 12px;
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: var(--mut);
+      border-radius: 6px;
+      padding: 1px 8px;
+      cursor: pointer
+    }
+
+    .c {
+      --l: var(--c);
+      --lb: var(--cb)
+    }
+
+    .m {
+      --l: var(--m);
+      --lb: var(--mb)
+    }
+
+    .a {
+      --l: var(--a);
+      --lb: var(--ab)
+    }
+
+    .hide {
+      display: none
+    }
+
+    @media (max-width:860px) {
+      aside {
+        display: none
+      }
+
+      .bar .sep {
+        display: none
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- <header>
+    <h1>HTML và CSS: tóm tắt từ cơ bản đến nâng cao</h1>
+    <p>Mỗi mục có giải thích ngắn và code mẫu. Lọc theo HTML/CSS và theo cấp độ.</p>
+  </header> -->
+  <div class="bar">
+    <div class="g" id="gt"><button data-t="all" class="on">HTML + CSS</button><button data-t="h">HTML</button><button
+        data-t="s">CSS</button></div>
+    <div class="sep"></div>
+    <div class="g" id="gl"><button data-l="all" class="on">Mọi cấp</button><button data-l="c">Cơ bản</button><button
+        data-l="m">Trung cấp</button><button data-l="a">Nâng cao</button></div>
+    <input id="q" type="search" placeholder="Tìm: flex, form, grid...">
+  </div>
+  <div class="wrap">
+    <aside id="nav"></aside>
+    <main id="main"></main>
+  </div>
+  <script>
+    const LV = { c: ["Cơ bản", "Nền tảng để dựng và trình bày một trang"], m: ["Trung cấp", "Công cụ dùng hàng ngày khi làm giao diện"], a: ["Nâng cao", "Kỹ thuật hiện đại và tối ưu"] };
+    const TN = { h: "HTML", s: "CSS" };
+    const S = [
+      ["h", "c", "Cấu trúc một trang HTML", "Mọi trang bắt đầu bằng doctype, thẻ <code>html</code> có <code>lang</code>, phần <code>head</code> chứa thông tin, phần <code>body</code> chứa nội dung hiển thị.",
+        `<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tiêu đề trang</title>
+  <link rel="stylesheet" href="style.css">
+<\/head>
+<body>
+  <h1>Xin chào</h1>
+<\/body>
+</html>`],
+      ["h", "c", "Văn bản, liên kết, ảnh, danh sách", "Mỗi trang chỉ nên có một <code>h1</code>; các tiêu đề đi theo thứ bậc h1 → h2 → h3. Ảnh luôn cần <code>alt</code>.",
+        `<h1>Tiêu đề</h1>
+<p>Đoạn văn có <strong>đậm</strong>, <em>nghiêng</em>.</p>
+<a href="https://example.com" target="_blank" rel="noopener">Liên kết</a>
+<img src="cat.jpg" alt="Con mèo trên ghế" width="400" height="300">
+<ul><li>Không thứ tự</li></ul>
+<ol><li>Có thứ tự</li></ol>`, "Với <code>target=\"_blank\"</code> hãy thêm <code>rel=\"noopener\"</code> để an toàn."],
+      ["h", "c", "Bảng và thẻ khối/dòng", "<code>div</code> là khối, <code>span</code> là dòng, chỉ dùng khi không có thẻ ngữ nghĩa phù hợp. Bảng chỉ dùng cho dữ liệu dạng bảng, không dùng để bố cục.",
+        `<table>
+  <thead><tr><th>Tên</th><th>Tuổi</th></tr></thead>
+  <tbody><tr><td>An</td><td>20</td></tr></tbody>
+</table>
+<div class="box">Khối</div>
+<span class="tag">Dòng</span>`],
+      ["h", "c", "Form cơ bản", "Mỗi ô nhập cần một <code>label</code> gắn bằng <code>for</code>/<code>id</code>. Thuộc tính <code>name</code> là tên trường khi gửi đi.",
+        `<form action="/dang-ky" method="post">
+  <label for="email">Email</label>
+  <input id="email" name="email" type="email" required>
+  <label for="pw">Mật khẩu</label>
+  <input id="pw" name="pw" type="password" minlength="8" required>
+  <select name="level"><option>Cơ bản</option><option>Nâng cao</option></select>
+  <textarea name="note" rows="3"></textarea>
+  <button type="submit">Gửi</button>
+</form>`],
+      ["h", "m", "HTML ngữ nghĩa", "Dùng thẻ đúng nghĩa thay vì toàn <code>div</code>: giúp trình đọc màn hình, SEO và người bảo trì hiểu cấu trúc.",
+        `<header>Logo, menu</header>
+<nav>...</nav>
+<main>
+  <article>
+    <h2>Bài viết</h2>
+    <section>...</section>
+  </article>
+  <aside>Liên quan</aside>
+</main>
+<footer>Bản quyền</footer>`],
+      ["h", "m", "Ảnh responsive, audio, video", "<code>srcset</code> cho trình duyệt chọn ảnh phù hợp màn hình, <code>picture</code> để đổi định dạng hoặc crop.",
+        `<img src="a-800.jpg" srcset="a-400.jpg 400w, a-800.jpg 800w"
+     sizes="(max-width: 600px) 100vw, 600px" alt="..." loading="lazy">
+<picture>
+  <source type="image/webp" srcset="a.webp">
+  <img src="a.jpg" alt="...">
+</picture>
+<video controls poster="p.jpg"><source src="v.mp4" type="video/mp4"></video>`],
+      ["h", "m", "Input nâng cao và kiểm tra dữ liệu", "HTML tự kiểm tra hợp lệ bằng thuộc tính, chưa cần JavaScript.",
+        `<input type="number" min="1" max="10" step="1">
+<input type="date">
+<input type="tel" pattern="[0-9]{10}" title="10 chữ số">
+<input type="text" list="cities" placeholder="Chọn thành phố">
+<datalist id="cities"><option value="Cần Thơ"><option value="Hà Nội"></datalist>
+<input type="checkbox" id="ok"><label for="ok">Đồng ý</label>`],
+      ["h", "a", "Tải script, meta, SEO, hiệu năng", "<code>defer</code> chạy script sau khi parse xong HTML và giữ thứ tự; <code>async</code> chạy ngay khi tải xong, không đảm bảo thứ tự.",
+        `<head>
+  <meta name="description" content="Mô tả 150 ký tự">
+  <meta property="og:title" content="Tiêu đề chia sẻ">
+  <link rel="canonical" href="https://example.com/trang">
+  <link rel="preload" href="font.woff2" as="font" crossorigin>
+  <script src="app.js" defer><\/script>
+<\/head>`, "Mọi ảnh dưới màn hình đầu nên có <code>loading=\"lazy\"</code>, ảnh đầu trang thì không."],
+      ["h", "a", "Truy cập được (a11y) và phần tử tương tác", "Ưu tiên phần tử có sẵn: <code>button</code>, <code>dialog</code>, <code>details</code>. ARIA chỉ dùng khi HTML thuần không đủ.",
+        `<button type="button" aria-expanded="false" aria-controls="menu">Menu</button>
+<details><summary>Xem thêm</summary>Nội dung ẩn</details>
+<dialog id="dlg"><p>Hộp thoại</p><button>Đóng</button></dialog>
+<a href="#main" class="skip">Bỏ qua điều hướng</a>
+<div role="alert">Đã lưu</div>`, "Quy tắc 1 của ARIA: nếu có thẻ HTML đúng nghĩa thì dùng thẻ đó, đừng thêm role."],
+      ["s", "c", "Selector và cách nhúng CSS", "Ba nơi viết CSS: file ngoài (nên dùng), thẻ <code>style</code>, thuộc tính <code>style</code>.",
+        `p { color: #333; }              /* theo thẻ */
+.card { padding: 16px; }        /* theo class */
+#top { margin: 0; }             /* theo id */
+ul li { list-style: none; }     /* con cháu */
+ul > li { margin: 4px 0; }      /* con trực tiếp */
+a[href^="https"] { color: green; }
+h1, h2 { font-weight: 700; }    /* nhóm */`],
+      ["s", "c", "Box model và đơn vị", "Mỗi phần tử là hộp: content, padding, border, margin. Đặt <code>box-sizing: border-box</code> để width đã gồm padding và border.",
+        `*, *::before, *::after { box-sizing: border-box; }
+.box {
+  width: 300px;
+  padding: 16px;
+  border: 1px solid #ccc;
+  margin: 0 auto;        /* căn giữa theo chiều ngang */
+}
+/* px cố định | rem theo cỡ chữ gốc | % theo cha | vw/vh theo màn hình */`],
+      ["s", "c", "Màu, chữ, nền", "Màu viết bằng hex, rgb, hsl. Font nên có danh sách dự phòng.",
+        `body {
+  font-family: system-ui, "Segoe UI", sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #1d2433;
+  background: hsl(220 30% 96%);
+}
+.btn { background: linear-gradient(90deg, #e34c26, #2965f1); border-radius: 8px; }`],
+      ["s", "c", "display và position", "<code>display</code> quyết định cách phần tử xếp. <code>position</code> quyết định cách định vị: static (mặc định), relative, absolute, fixed, sticky.",
+        `.hide { display: none; }
+.inline-box { display: inline-block; }
+.wrap { position: relative; }
+.badge { position: absolute; top: 0; right: 0; }  /* so với .wrap */
+.header { position: sticky; top: 0; z-index: 10; }`],
+      ["s", "c", "Flexbox (bố cục một chiều)", "Dùng cho hàng hoặc cột: thanh menu, căn giữa, thẻ cạnh nhau.",
+        `.row {
+  display: flex;
+  flex-direction: row;          /* hoặc column */
+  justify-content: space-between; /* trục chính */
+  align-items: center;            /* trục phụ */
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.grow { flex: 1; }               /* chiếm phần còn lại */
+.center { display: flex; place-content: center; }`],
+      ["s", "m", "Grid (bố cục hai chiều)", "Dùng cho lưới trang, gallery. <code>fr</code> là phần chia của không gian còn lại.",
+        `.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+.layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  grid-template-areas: "side main";
+}
+.hero { grid-column: 1 / -1; }   /* trải hết hàng */`],
+      ["s", "m", "Responsive và media query", "Thiết kế cho điện thoại trước (mobile-first), rồi mở rộng cho màn lớn.",
+        `.cols { display: grid; gap: 16px; }
+@media (min-width: 768px) {
+  .cols { grid-template-columns: 1fr 1fr; }
+}
+@media (prefers-color-scheme: dark) { body { background: #0f1420; } }
+@media (prefers-reduced-motion: reduce) { * { animation: none; } }`],
+      ["s", "m", "Pseudo-class và pseudo-element", "Pseudo-class chọn theo trạng thái (<code>:hover</code>), pseudo-element tạo hoặc chọn phần con (<code>::before</code>).",
+        `a:hover, button:focus-visible { outline: 2px solid #2965f1; }
+li:nth-child(odd) { background: #f4f6fb; }
+li:not(:last-child) { border-bottom: 1px solid #ddd; }
+.quote::before { content: "“"; font-size: 2em; }
+input:invalid { border-color: crimson; }
+p::first-line { font-weight: 700; }`],
+      ["s", "m", "Cascade, specificity, biến CSS", "Khi nhiều luật xung đột: điểm đặc hiệu cao hơn thắng (inline > id > class > thẻ), bằng nhau thì luật viết sau thắng. Tránh <code>!important</code>.",
+        `:root { --brand: #2965f1; --gap: 16px; }
+.btn { background: var(--brand); margin: var(--gap); }
+.dark { --brand: #60a5fa; }          /* đổi biến là đổi cả giao diện */
+.btn { color: var(--text, #111); }   /* giá trị dự phòng */`],
+      ["s", "m", "Transition và transform", "Chuyển động nhỏ khi người dùng tương tác. Ưu tiên animate <code>transform</code> và <code>opacity</code> cho mượt.",
+        `.card { transition: transform .2s ease, box-shadow .2s ease; }
+.card:hover { transform: translateY(-4px) scale(1.02); box-shadow: 0 8px 20px #0003; }
+.spin { transform: rotate(45deg); }`],
+      ["s", "a", "Animation với @keyframes", "Chạy nhiều bước hoặc lặp, không cần người dùng kích hoạt.",
+        `@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%      { transform: scale(1.1); opacity: .7; }
+}
+.dot { animation: pulse 1.5s ease-in-out infinite; }`],
+      ["s", "a", "Kỹ thuật hiện đại: clamp, :has, container query, nesting", "Các tính năng mới đã chạy trên trình duyệt hiện đại, giúp bớt media query và JavaScript.",
+        `h1 { font-size: clamp(1.5rem, 4vw, 2.5rem); }       /* min, ưu tiên, max */
+.card:has(img) { grid-template-columns: 120px 1fr; }  /* chọn cha theo con */
+.box { container-type: inline-size; }
+@container (min-width: 400px) { .item { display: flex; } }
+.nav {
+  a { color: inherit; &:hover { color: tomato; } }   /* CSS nesting */
+}
+.m { margin-inline: auto; padding-block: 1rem; }       /* logical properties */`],
+      ["s", "a", "Tổ chức CSS lớn: @layer, BEM, reset", "Chia lớp để kiểm soát thứ tự ưu tiên, đặt tên nhất quán để dễ bảo trì.",
+        `@layer reset, base, components, utilities;
+@layer components {
+  .card { padding: 1rem; }
+  .card__title { font-weight: 700; }      /* BEM: khối__phần */
+  .card--featured { border-color: gold; } /* BEM: khối--biến thể */
+}
+@layer utilities { .sr-only { position: absolute; clip: rect(0 0 0 0); } }`, "Layer đứng sau luôn thắng layer đứng trước, bất kể độ đặc hiệu của selector."],
+      ["s", "a", "Bẫy thường gặp", "Danh sách nhanh để tự kiểm tra khi giao diện không như ý.",
+        `/* 1. Margin của hai khối liền kề gộp lại (margin collapse) */
+/* 2. height: 100% không chạy nếu cha không có chiều cao */
+/* 3. z-index chỉ có tác dụng với phần tử có position (hoặc là flex/grid item) */
+/* 4. Ảnh bị méo: thêm */ img { max-width: 100%; height: auto; object-fit: cover; }
+/* 5. Cuộn ngang lạ: kiểm tra phần tử rộng hơn màn hình */
+/* 6. Quên thẻ meta viewport thì trang không responsive trên điện thoại */`]
+    ];
+    const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const re = /(&lt;!--[\s\S]*?--&gt;|\/\*[\s\S]*?\*\/)|("[^"\n]*"|'[^'\n]*')|(&lt;\/?[a-zA-Z][\w-]*)|\b(--[\w-]+|[a-z-]+)(?=\s*:\s)|(#[0-9a-fA-F]{3,8}\b|(?<![\w-])-?\d*\.?\d+(?:px|rem|em|%|vh|vw|fr|s|ms|deg)?(?![\w]))/g;
+    const hl = c => esc(c).replace(re, (m, cm, s, t, p, n) => cm ? "<em>" + cm + "</em>" : s ? "<i>" + s + "</i>" : t ? "<b>" + t + "</b>" : p ? "<s>" + p + "</s>" + m.slice(p.length) : "<u>" + n + "</u>");
+    const main = document.getElementById("main"), nav = document.getElementById("nav");
+    let last = "", navHtml = "";
+    S.forEach((x, i) => {
+      const [t, l, title, d, code, tip] = x, key = t + l;
+      if (key !== last) {
+        last = key;
+        main.insertAdjacentHTML("beforeend", `<div class="lvl ${l}" data-t="${t}" data-l="${l}"><span class="badge ${t}">${TN[t]}</span>${LV[l][0]}<small>${LV[l][1]}</small></div>`);
+        navHtml += `<h4 class="${l}" data-t="${t}" style="color:var(--l)">${TN[t]} · ${LV[l][0]}</h4>`;
+      }
+      main.insertAdjacentHTML("beforeend", `<section class="card ${l}" id="s${i}" data-t="${t}" data-l="${l}"><h3><span class="badge ${t}">${TN[t]}</span>${title}</h3><p>${d}</p><div class="cb"><button class="cp">Sao chép</button><pre><code>${hl(code)}</code></pre></div>${tip ? `<div class="tip">${tip}</div>` : ""}</section>`);
+      navHtml += `<a class="${l}" href="#s${i}">${title}</a>`;
+    });
+    nav.innerHTML = navHtml;
+    let ft = "all", fl = "all", q = "";
+    function apply() {
+      document.querySelectorAll("main [data-l]").forEach(e => {
+        const card = e.tagName === "SECTION";
+        const ok = (ft === "all" || e.dataset.t === ft) && (fl === "all" || e.dataset.l === fl) && (!card || !q || e.textContent.toLowerCase().includes(q));
+        e.classList.toggle("hide", !ok);
+      });
+    }
+    function group(id, attr, set) {
+      document.querySelectorAll("#" + id + " button").forEach(b => b.onclick = () => {
+        set(b.dataset[attr]);
+        document.querySelectorAll("#" + id + " button").forEach(x => x.classList.toggle("on", x === b)); apply();
+      });
+    }
+    group("gt", "t", v => ft = v); group("gl", "l", v => fl = v);
+    document.getElementById("q").oninput = e => { q = e.target.value.trim().toLowerCase(); apply(); };
+    main.addEventListener("click", e => {
+      if (!e.target.classList.contains("cp")) return;
+      const t = e.target.nextElementSibling.textContent;
+      navigator.clipboard && navigator.clipboard.writeText(t).then(() => { e.target.textContent = "Đã chép"; setTimeout(() => e.target.textContent = "Sao chép", 1200); });
+    });
+  </script>
+</body>
+
+</html>

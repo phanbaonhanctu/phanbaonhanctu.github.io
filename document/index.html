@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Góc học lập trình — Tổng hợp kiến thức</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f3f6fb;
+      --panel: #fff;
+      --text: #182230;
+      --muted: #64748b;
+      --line: #dce4ef;
+      --accent: #2563eb;
+      --shadow: 0 12px 32px #17255412
+    }
+
+    @media(prefers-color-scheme:dark) {
+      :root {
+        --bg: #0c1220;
+        --panel: #151e2e;
+        --text: #e6edf7;
+        --muted: #9aa9bf;
+        --line: #2b3850;
+        --accent: #7aa7ff;
+        --shadow: 0 12px 32px #0003
+      }
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif
+    }
+
+    .hero {
+      padding: 26px clamp(18px, 4vw, 48px) 22px;
+      background: linear-gradient(115deg, #14213d, #2563eb 58%, #0d9488);
+      color: white
+    }
+
+    .hero .eyebrow {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .16em;
+      opacity: .8;
+      font-weight: 700
+    }
+
+    h1 {
+      font-size: clamp(25px, 4vw, 38px);
+      line-height: 1.15;
+      margin: 7px 0 8px
+    }
+
+    .hero p {
+      margin: 0;
+      opacity: .9;
+      max-width: 700px
+    }
+
+    .shell {
+      max-width: 1500px;
+      margin: auto;
+      padding: 18px clamp(12px, 2.5vw, 32px)
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 12px
+    }
+
+    .search {
+      flex: 1;
+      min-width: 210px;
+      max-width: 420px;
+      padding: 10px 13px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--panel);
+      color: var(--text);
+      font: inherit
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 13px
+    }
+
+    .tabs {
+      display: flex;
+      gap: 7px;
+      overflow-x: auto;
+      padding: 4px 2px 12px;
+      scrollbar-width: thin
+    }
+
+    .tab {
+      flex: 0 0 auto;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: var(--panel);
+      color: var(--text);
+      padding: 10px 13px;
+      cursor: pointer;
+      font: inherit;
+      white-space: nowrap;
+      transition: .15s
+    }
+
+    .tab:hover {
+      border-color: var(--accent);
+      transform: translateY(-1px)
+    }
+
+    .tab[aria-selected=true] {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+      box-shadow: 0 5px 14px #2563eb2a
+    }
+
+    .tab .num {
+      display: inline-grid;
+      place-items: center;
+      width: 21px;
+      height: 21px;
+      border-radius: 6px;
+      background: #64748b20;
+      font-size: 11px;
+      font-weight: 800;
+      margin-right: 6px
+    }
+
+    .tab[aria-selected=true] .num {
+      background: #ffffff30
+    }
+
+    .frame-wrap {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: var(--shadow)
+    }
+
+    .frame-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--line)
+    }
+
+    .frame-title {
+      font-weight: 750
+    }
+
+    .frame-sub {
+      font-size: 12px;
+      color: var(--muted)
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      align-items: center
+    }
+
+    .action {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--text);
+      border-radius: 9px;
+      padding: 7px 10px;
+      cursor: pointer;
+      font: inherit;
+      font-size: 13px;
+      text-decoration: none
+    }
+
+    .action:hover {
+      border-color: var(--accent)
+    }
+
+    iframe {
+      display: block;
+      width: 100%;
+      height: calc(100vh - 245px);
+      min-height: 560px;
+      border: 0;
+      background: white
+    }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+      padding: 16px
+    }
+
+    @media(max-width:650px) {
+      .hero {
+        padding-top: 22px
+      }
+
+      .shell {
+        padding: 12px 9px
+      }
+
+      .frame-head {
+        align-items: flex-start;
+        flex-direction: column
+      }
+
+      .actions {
+        width: 100%
+      }
+
+      iframe {
+        height: calc(100vh - 300px);
+        min-height: 500px
+      }
+
+      .tab {
+        padding: 9px 11px
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="shell">
+    <nav class="tabs" role="tablist" aria-label="Chủ đề lập trình">
+      <button class="tab" role="tab" id="tab-html" aria-controls="content" aria-selected="true"
+        data-src="pages/html-css.html" data-title="HTML & CSS">HTML & CSS</button>
+      <button class="tab" role="tab" id="tab-js" aria-controls="content" aria-selected="false"
+        data-src="pages/javascript.html" data-title="JavaScript">JavaScript</button>
+      <!-- <button class="tab" role="tab" id="tab-bootstrap" aria-controls="content" aria-selected="false"
+        data-src="pages/bootstrap.html" data-title="Bootstrap 5">Bootstrap 5</button> -->
+      <button class="tab" role="tab" id="tab-tailwind" aria-controls="content" aria-selected="false"
+        data-src="pages/tailwind.html" data-title="Tailwind CSS">Tailwind CSS</button>
+      <button class="tab" role="tab" id="tab-java" aria-controls="content" aria-selected="false"
+        data-src="pages/java.html" data-title="Java">Java</button>
+      <button class="tab" role="tab" id="tab-sql" aria-controls="content" aria-selected="false"
+        data-src="pages/sql-oracle.html" data-title="SQL & Oracle">SQL & Oracle</button>
+      <button class="tab" role="tab" id="tab-vscode" aria-controls="content" aria-selected="false"
+        data-src="pages/vscode-devtools.html" data-title="VS Code & DevTools">VS Code &
+        DevTools</button>
+    </nav>
+    <section class="frame-wrap" aria-label="Nội dung học tập">
+      <div class="frame-head">
+        <div>
+          <div class="frame-title" id="activeTitle">HTML & CSS</div>
+        </div>
+        <div class="actions">
+          <button class="action" id="reload">↻ Tải lại nội dung</button>
+          <a class="action" id="openOriginal" href="pages/html-css.html" target="_blank" rel="noopener">Mở riêng tab này
+            ↗</a>
+        </div>
+      </div>
+      <iframe id="content" name="content" title="Nội dung chủ đề HTML & CSS" src="pages/html-css.html"></iframe>
+    </section>
+    <footer>Góc học lập trình · Bản tổng hợp chạy trực tiếp trên máy, không cần cài đặt server.</footer>
+  </div>
+  <script>
+    const tabs = [...document.querySelectorAll('.tab')], frame = document.getElementById('content');
+    const title = document.getElementById('activeTitle'), openOriginal = document.getElementById('openOriginal');
+    function activate(tab, focus = false) {
+      tabs.forEach(t => { const active = t === tab; t.setAttribute('aria-selected', String(active)); t.tabIndex = active ? 0 : -1 });
+      frame.src = tab.dataset.src; frame.title = 'Nội dung chủ đề ' + tab.dataset.title;
+      title.textContent = tab.dataset.title; openOriginal.href = tab.dataset.src;
+      if (focus) tab.focus();
+    }
+    tabs.forEach((tab, i) => {
+      tab.addEventListener('click', () => activate(tab)); tab.addEventListener('keydown', e => {
+        if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { e.preventDefault(); let next = (i + (e.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length; activate(tabs[next], true) }
+      })
+    });
+    document.getElementById('reload').addEventListener('click', () => { frame.src = frame.src });
+    document.getElementById('searchTabs').addEventListener('input', e => {
+      const q = e.target.value.trim().toLocaleLowerCase('vi');
+      tabs.forEach(t => { t.hidden = !!q && !t.dataset.title.toLocaleLowerCase('vi').includes(q) });
+      const selected = tabs.find(t => t.getAttribute('aria-selected') === 'true');
+      if (selected && selected.hidden) { const first = tabs.find(t => !t.hidden); if (first) activate(first) }
+    });
+    tabs.forEach((t, i) => t.tabIndex = i === 0 ? 0 : -1);
+  </script>
+</body>
+
+</html>

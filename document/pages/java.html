@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tóm tắt Java: từ cơ bản đến JVM và thực hành tốt</title>
+    <style>
+        :root {
+            --bg: #f1f5f9;
+            --card: #fff;
+            --text: #1d2433;
+            --mut: #5d6679;
+            --line: #dbe3ec;
+            --code: #f1f5f9;
+            --c: #0b9a76;
+            --cb: #e1f6ef;
+            --m: #d97706;
+            --mb: #fdf0d9;
+            --a: #7c3aed;
+            --ab: #efe7fe;
+            --pf: #c74634;
+            --pfb: #fde8e4;
+            --k: #c026d3;
+            --s: #0b8a5f;
+            --n: #d97706;
+            --cm: #8a93a6;
+            --p: #2563eb
+        }
+
+        @media (prefers-color-scheme:dark) {
+            :root {
+                --bg: #10161d;
+                --card: #18212b;
+                --text: #e8eef5;
+                --mut: #9aaabd;
+                --line: #2b3a4a;
+                --code: #0d1319;
+                --c: #34d3a8;
+                --cb: #12332c;
+                --m: #fbbf24;
+                --mb: #3a2d10;
+                --a: #a78bfa;
+                --ab: #2a2150;
+                --pf: #fb7a65;
+                --pfb: #3d1b16;
+                --k: #f0abfc;
+                --s: #6ee7b7;
+                --n: #fbbf24;
+                --cm: #6f8096;
+                --p: #7dd3fc
+            }
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font: 16px/1.6 system-ui, "Segoe UI", Roboto, sans-serif
+        }
+
+        header {
+            background: linear-gradient(100deg, #2f5f86, #5382a1 50%, #e76f00);
+            color: #fff;
+            padding: 28px 20px 22px
+        }
+
+        header h1 {
+            margin: 0 0 4px;
+            font-size: clamp(24px, 4vw, 36px)
+        }
+
+        header p {
+            margin: 0;
+            opacity: .95
+        }
+
+        .bar {
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            background: var(--card);
+            border-bottom: 1px solid var(--line);
+            padding: 10px 16px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center
+        }
+
+        .bar button,
+        .bar input {
+            font: inherit;
+            font-size: 14px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: var(--card);
+            color: var(--text);
+            padding: 5px 14px
+        }
+
+        .bar button {
+            cursor: pointer
+        }
+
+        .bar button.on {
+            border-color: transparent;
+            color: #fff;
+            background: #c74634
+        }
+
+        .bar button[data-l=c].on {
+            background: var(--c);
+            color: #06231b
+        }
+
+        .bar button[data-l=m].on {
+            background: var(--m);
+            color: #2b1a00
+        }
+
+        .bar button[data-l=a].on {
+            background: var(--a)
+        }
+
+        .bar button[data-l=p].on {
+            background: var(--pf);
+            color: #fff
+        }
+
+        .bar input {
+            flex: 1;
+            min-width: 140px;
+            max-width: 280px;
+            margin-left: auto
+        }
+
+        .wrap {
+            display: flex;
+            gap: 24px;
+            max-width: 1150px;
+            margin: 0 auto;
+            padding: 20px 16px
+        }
+
+        aside {
+            width: 215px;
+            flex: none;
+            position: sticky;
+            top: 64px;
+            align-self: flex-start;
+            max-height: calc(100vh - 80px);
+            overflow: auto;
+            font-size: 14px
+        }
+
+        aside h4 {
+            margin: 12px 0 4px;
+            font-size: 14px
+        }
+
+        aside a {
+            display: block;
+            padding: 3px 8px;
+            color: var(--text);
+            text-decoration: none;
+            border-radius: 6px;
+            border-left: 3px solid var(--l)
+        }
+
+        aside a:hover {
+            background: var(--card)
+        }
+
+        main {
+            flex: 1;
+            min-width: 0
+        }
+
+        .lvl {
+            margin: 26px 0 12px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 20px;
+            font-weight: 700;
+            background: var(--lb);
+            color: var(--l)
+        }
+
+        .lvl small {
+            display: block;
+            font-weight: 400;
+            font-size: 14px;
+            color: var(--mut)
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-left: 6px solid var(--l);
+            border-radius: 10px;
+            padding: 14px 18px;
+            margin: 0 0 14px
+        }
+
+        .card h3 {
+            margin: 0 0 6px;
+            font-size: 18px;
+            color: var(--l)
+        }
+
+        .card p {
+            margin: 4px 0 8px;
+            color: var(--mut)
+        }
+
+        .tip {
+            background: var(--lb);
+            border-radius: 8px;
+            padding: 6px 10px;
+            margin: 8px 0 0;
+            font-size: 14px
+        }
+
+        code {
+            font-family: ui-monospace, Consolas, Menlo, monospace
+        }
+
+        .cb {
+            position: relative;
+            margin: 8px 0 0
+        }
+
+        pre {
+            margin: 0;
+            padding: 12px 14px;
+            background: var(--code);
+            border-radius: 8px;
+            overflow-x: auto;
+            font: 13.5px/1.55 ui-monospace, Consolas, Menlo, monospace
+        }
+
+        pre b {
+            font-weight: 400;
+            color: var(--k)
+        }
+
+        pre i {
+            font-style: normal;
+            color: var(--s)
+        }
+
+        pre u {
+            text-decoration: none;
+            color: var(--n)
+        }
+
+        pre em {
+            font-style: normal;
+            color: var(--cm)
+        }
+
+        pre s {
+            text-decoration: none;
+            color: var(--p)
+        }
+
+        .cp {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            font-size: 12px;
+            border: 1px solid var(--line);
+            background: var(--card);
+            color: var(--mut);
+            border-radius: 6px;
+            padding: 1px 8px;
+            cursor: pointer
+        }
+
+        .p {
+            --l: var(--pf);
+            --lb: var(--pfb)
+        }
+
+        .c {
+            --l: var(--c);
+            --lb: var(--cb)
+        }
+
+        .m {
+            --l: var(--m);
+            --lb: var(--mb)
+        }
+
+        .a {
+            --l: var(--a);
+            --lb: var(--ab)
+        }
+
+        .hide {
+            display: none
+        }
+
+        @media (max-width:860px) {
+            aside {
+                display: none
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- <header><h1>Java: từ cơ bản đến JVM và thực hành tốt</h1><p>Ngôn ngữ, OOP, collections, stream, đa luồng, Java hiện đại (đến 21), JVM và hiệu năng. Code mẫu dùng Java 17 trở lên.</p></header> -->
+    <div class="bar">
+        <button data-l="all" class="on">Mọi cấp</button><button data-l="c">Cơ bản</button><button data-l="m">Trung
+            cấp</button><button data-l="a">Nâng cao</button><button data-l="p">JVM & thực hành</button>
+        <input id="q" type="search" placeholder="Tìm: stream, hashmap, thread, gc...">
+    </div>
+    <div class="wrap">
+        <aside id="nav"></aside>
+        <main id="main"></main>
+    </div>
+    <script>
+        const LV = { c: ["Cơ bản", "Cú pháp, kiểu dữ liệu, điều khiển, String, mảng, I/O"], m: ["OOP, generics, exception, collections", "Nền tảng thiết kế và cấu trúc dữ liệu"], a: ["Nâng cao", "Lambda, stream, java.time, Java hiện đại, đa luồng, reflection, JDBC"], p: ["JVM và thực hành tốt", "Bộ nhớ, GC, công cụ chẩn đoán, hiệu năng, pattern, test, bẫy"] };
+        const S = [
+            ["c", "Cấu trúc chương trình, JDK, phiên bản", "JDK = JRE + công cụ (javac, jar, jshell...). JRE chạy bytecode trên JVM. Mã nguồn .java → javac → bytecode .class → JVM chạy (JIT biên dịch thành mã máy khi chạy). Bản LTS gần đây: 17, 21, 25.",
+                `package com.example.app;               // trùng cấu trúc thư mục
+
+public class Hello {
+    public static void main(String[] args) {
+        System.out.println("Xin chào");
+    }
+}
+// javac Hello.java && java Hello
+// Từ Java 11: chạy thẳng file đơn: java Hello.java
+// jshell: thử code tương tác không cần tạo file`],
+            ["c", "Kiểu dữ liệu và ép kiểu", "8 kiểu nguyên thủy: byte(8 bit) short(16) int(32) long(64) float(32) double(64) char(16) boolean. Còn lại là tham chiếu. Mỗi kiểu có wrapper: Integer, Long, Double...",
+                `int a = 10; long b = 10L; double d = 3.14; float f = 3.14f; char c = 'A'; boolean ok = true;
+var list = new ArrayList<String>();      // suy luận kiểu (10+), chỉ cho biến cục bộ
+
+int i = (int) 3.9;                       // 3, cắt phần thập phân
+byte x = (byte) 200;                     // -56, tràn số
+int big = Integer.MAX_VALUE + 1;         // tràn: thành số âm, không báo lỗi
+Math.addExact(Integer.MAX_VALUE, 1);     // ném ArithmeticException
+
+Integer p = 127, q = 127;  p == q;       // true (cache -128..127)
+Integer m = 128, n = 128;  m == n;       // false, dùng m.equals(n)
+0.1 + 0.2 == 0.3;                        // false; tiền tệ dùng BigDecimal
+new BigDecimal("0.1").add(new BigDecimal("0.2"));   // dùng constructor chuỗi`, "<code>==</code> so sánh tham chiếu với object, <code>equals()</code> so sánh nội dung. Nhận <code>null</code> khi unbox sẽ ném NullPointerException."],
+            ["c", "Điều khiển luồng và switch", "Từ Java 14, <code>switch</code> là biểu thức: dùng <code>-&gt;</code>, không rơi xuống case sau, có thể trả giá trị.",
+                `String r = switch (day) {
+    case SAT, SUN -> "Cuối tuần";
+    case MON -> { log(); yield "Đầu tuần"; }      // khối dùng yield
+    default -> "Ngày thường";
+};
+for (int i = 0; i < 5; i++) { if (i == 2) continue; }
+for (String s : names) { }
+outer:
+for (int i = 0; i < 3; i++)
+    for (int j = 0; j < 3; j++) { if (j == 1) continue outer; if (i == 2) break outer; }
+int k = 0; do { k++; } while (k < 3);
+String t = n > 0 ? "dương" : "không dương";`],
+            ["c", "String, StringBuilder, text block", "String bất biến (immutable) nên nối chuỗi trong vòng lặp phải dùng StringBuilder.",
+                `String s = "Java";
+s.length(); s.charAt(0); s.substring(1, 3); s.indexOf("v"); s.contains("av");
+s.toUpperCase(); s.trim(); s.strip(); s.isBlank(); s.repeat(2); s.split(",");
+String.join("-", "a", "b");  String.valueOf(5);  "a".compareTo("b");
+"%s có %d tuổi".formatted("An", 20);        // 15+; hoặc String.format
+String a = "hi", b = new String("hi");
+a == b;  a.equals(b);                       // false, true
+StringBuilder sb = new StringBuilder();
+for (int i = 0; i < 3; i++) sb.append(i).append(',');
+sb.setLength(sb.length() - 1);  sb.toString();
+
+String json = """
+    {"name": "An",
+     "age": 20}
+    """;                                    // text block (15+)`],
+            ["c", "Mảng, method, truyền tham số", "Java luôn truyền theo giá trị: với object, giá trị được truyền là bản sao của tham chiếu (sửa được nội dung, nhưng gán lại tham số không ảnh hưởng bên ngoài).",
+                `int[] arr = {3, 1, 2};      int[][] grid = new int[3][4];
+Arrays.sort(arr);  Arrays.toString(arr);  Arrays.fill(arr, 0);
+int[] copy = Arrays.copyOf(arr, 5);   Arrays.binarySearch(arr, 2);   // mảng đã sắp xếp
+Arrays.deepToString(grid);   Arrays.equals(a1, a2);   Arrays.stream(arr).sum();
+
+static int sum(int... nums) { int s = 0; for (int n : nums) s += n; return s; }   // varargs
+static double area(double r) { return Math.PI * r * r; }
+static double area(double w, double h) { return w * h; }       // overload: khác tham số
+static int fact(int n) { return n <= 1 ? 1 : n * fact(n - 1); }  // đệ quy, cẩn thận StackOverflow
+List<Integer> fixed = Arrays.asList(1, 2, 3);   // kích thước cố định: add() ném lỗi`],
+            ["c", "Nhập xuất, file, try-with-resources", "Mọi thứ implements AutoCloseable đặt trong <code>try (...)</code> sẽ tự đóng, kể cả khi có lỗi.",
+                `Path p = Path.of("data.txt");
+String all = Files.readString(p);                        // 11+
+List<String> lines = Files.readAllLines(p);
+Files.writeString(p, "nội dung", StandardOpenOption.CREATE);
+
+try (BufferedReader br = Files.newBufferedReader(p);     // đọc file lớn từng dòng
+     Stream<String> st = Files.lines(p)) {
+    st.filter(l -> !l.isBlank()).forEach(System.out::println);
+} catch (IOException e) {
+    throw new UncheckedIOException(e);
+}
+Scanner sc = new Scanner(System.in);  int n = sc.nextInt();
+Files.walk(Path.of(".")); Files.exists(p); Files.copy(a, b); Files.delete(p);`],
+            ["m", "Class, constructor, static, phạm vi truy cập", "Phạm vi: <code>private</code> (trong class), mặc định/package-private, <code>protected</code> (package + lớp con), <code>public</code>. Che dữ liệu (private) và cung cấp getter/setter có kiểm tra.",
+                `public class Account {
+    private static int count;                 // thuộc về class, dùng chung
+    private final String id;                  // final: gán một lần
+    private double balance;
+    static { count = 0; }                     // khối static: chạy khi nạp class
+    { /* khối khởi tạo: chạy trước constructor */ }
+
+    public Account(String id) { this(id, 0); }             // gọi constructor khác
+    public Account(String id, double b) { this.id = id; this.balance = b; count++; }
+    public void deposit(double amt) {
+        if (amt <= 0) throw new IllegalArgumentException("amt phải > 0");
+        balance += amt;
+    }
+    public static int getCount() { return count; }
+}`, "Thứ tự khởi tạo: static (cha rồi con) → khối khởi tạo và field của cha → constructor cha → field của con → constructor con."],
+            ["m", "Kế thừa, đa hình, abstract, interface", "Một lớp chỉ kế thừa một lớp, nhưng cài đặt nhiều interface. Interface có thể có <code>default</code>, <code>static</code>, <code>private</code> method.",
+                `abstract class Shape {
+    abstract double area();                   // lớp con bắt buộc cài đặt
+    public String toString() { return getClass().getSimpleName() + " " + area(); }
+}
+class Circle extends Shape {
+    private final double r;
+    Circle(double r) { super(); this.r = r; }
+    @Override double area() { return Math.PI * r * r; }
+}
+interface Flyable {
+    void fly();
+    default void land() { System.out.println("hạ cánh"); }
+}
+Shape s = new Circle(2);                      // đa hình: gọi area() của Circle
+if (s instanceof Circle c) { /* pattern matching (16+) */ }
+// final class không thể kế thừa; final method không thể override
+// Override: cùng chữ ký, kiểu trả về giống/hẹp hơn, quyền truy cập không hẹp hơn`, "Ưu tiên composition (có một) hơn inheritance (là một) khi không thật sự có quan hệ \"là\"."],
+            ["m", "equals, hashCode, toString, so sánh", "Hợp đồng: hai object <code>equals</code> thì <b>phải</b> cùng <code>hashCode</code>. Vi phạm sẽ làm HashMap/HashSet sai.",
+                `class Point implements Comparable<Point> {
+    final int x, y;
+    Point(int x, int y) { this.x = x; this.y = y; }
+    @Override public boolean equals(Object o) {
+        return this == o || (o instanceof Point p && x == p.x && y == p.y);
+    }
+    @Override public int hashCode() { return Objects.hash(x, y); }
+    @Override public String toString() { return "(" + x + "," + y + ")"; }
+    @Override public int compareTo(Point o) { return Integer.compare(x, o.x); }   // thứ tự tự nhiên
+}
+list.sort(Comparator.comparing(Point::getX).thenComparing(Point::getY).reversed());
+Collections.sort(list);   list.sort(null);   // dùng Comparable`, "Dùng object thay đổi được làm key của HashMap/HashSet sẽ làm mất phần tử khi hashCode đổi."],
+            ["m", "Enum, record, sealed, lớp lồng nhau", "Record (16) là lớp dữ liệu bất biến gọn. Sealed (17) giới hạn lớp con được phép. Enum có thể có field và method.",
+                `enum Level { LOW(1), HIGH(3); final int w; Level(int w) { this.w = w; } }
+Level.valueOf("LOW");  Level.values();  Level.HIGH.ordinal();   EnumMap<Level, String> m;
+
+record Person(String name, int age) {                 // tự có constructor, getter name(), equals, hashCode, toString
+    Person { if (age < 0) throw new IllegalArgumentException(); }   // compact constructor
+    String label() { return name + " (" + age + ")"; }
+}
+sealed interface Shape permits Circle, Square {}
+record Circle(double r) implements Shape {}
+record Square(double a) implements Shape {}
+
+class Outer { class Inner {} static class Nested {} }  // Inner giữ tham chiếu tới Outer
+Runnable r = new Runnable() { public void run() {} };   // lớp ẩn danh (thường thay bằng lambda)`],
+            ["m", "Generics", "Kiểm tra kiểu lúc biên dịch. Sau biên dịch kiểu bị xóa (type erasure) nên không có <code>new T()</code>, <code>List&lt;int&gt;</code>, hay <code>instanceof List&lt;String&gt;</code>.",
+                `class Box<T extends Comparable<T>> {          // chặn trên
+    private T v;  Box(T v) { this.v = v; }
+    T max(T other) { return v.compareTo(other) >= 0 ? v : other; }
+}
+static <T> List<T> listOf(T a, T b) { return List.of(a, b); }      // generic method
+
+// Wildcard, nguyên tắc PECS: Producer Extends, Consumer Super
+static double sum(List<? extends Number> src) { double s = 0; for (Number n : src) s += n.doubleValue(); return s; }
+static void fill(List<? super Integer> dst) { dst.add(1); dst.add(2); }
+
+List<Integer> li = new ArrayList<>();
+List<Number> ln = new ArrayList<Integer>();    // LỖI: List<Integer> KHÔNG là List<Number>`],
+            ["m", "Exception", "<code>Throwable</code> → <code>Error</code> (không bắt) và <code>Exception</code>. Checked (kế thừa Exception, bắt buộc xử lý hoặc khai báo throws) và unchecked (RuntimeException).",
+                `try {
+    risky();
+} catch (FileNotFoundException | ParseException e) {   // multi-catch
+    log.error("Lỗi đọc", e);                            // ghi cả stack trace
+    throw new ServiceException("Không đọc được", e);    // giữ nguyên nhân gốc (cause)
+} finally {
+    cleanup();       // luôn chạy; KHÔNG return trong finally (nuốt exception)
+}
+class ServiceException extends RuntimeException {
+    ServiceException(String m, Throwable c) { super(m, c); }
+}
+// Quy tắc: bắt cụ thể nhất, không nuốt lỗi (catch rỗng), không dùng exception cho luồng thường,
+// validate đầu vào sớm: Objects.requireNonNull(x, "x null");
+// StackOverflowError, OutOfMemoryError là Error: thường không nên bắt`],
+            ["m", "Collections: chọn đúng cấu trúc", "Chọn theo thao tác chính. Độ phức tạp trung bình.",
+                `List:  ArrayList      get O(1), add cuối O(1) khấu hao, chèn giữa O(n)   -> mặc định
+       LinkedList     chèn đầu/cuối O(1) nhưng get O(n)                  -> hiếm khi nên dùng
+Set:   HashSet        add/contains O(1), không thứ tự
+       LinkedHashSet  giữ thứ tự thêm vào       TreeSet  có thứ tự, O(log n)
+Map:   HashMap        get/put O(1), cho phép key null
+       LinkedHashMap  giữ thứ tự thêm (hoặc LRU)  TreeMap  key có thứ tự, O(log n)
+       ConcurrentHashMap  an toàn đa luồng, không cho null
+Queue: ArrayDeque (stack/queue nhanh)   PriorityQueue (heap, lấy nhỏ nhất)
+
+// HashMap bên trong: mảng các bucket (mặc định 16), load factor 0.75 thì nhân đôi và rehash.
+// Cùng bucket: danh sách liên kết, chuyển thành cây đỏ-đen khi >= 8 phần tử (Java 8+).
+// ArrayList tăng khoảng 1.5 lần; biết trước kích thước thì new ArrayList<>(n).`, "Thay vì <code>Stack</code> và <code>Vector</code> (cũ, đồng bộ hóa chậm), dùng <code>ArrayDeque</code> và <code>ArrayList</code>."],
+            ["m", "Map, List API và bẫy collections", "Các method từ Java 8/9 giúp bớt code if/else.",
+                `Map<String, Integer> m = new HashMap<>();
+m.put("a", 1);  m.getOrDefault("b", 0);  m.putIfAbsent("c", 3);
+m.merge("a", 1, Integer::sum);                           // đếm tần suất
+m.computeIfAbsent("k", k -> new ArrayList<>()).add(1);   // multimap
+for (Map.Entry<String, Integer> e : m.entrySet()) { e.getKey(); e.getValue(); }
+m.forEach((k, v) -> System.out.println(k + "=" + v));
+
+List<Integer> ro = List.of(1, 2);      // bất biến; Map.of, Set.of tương tự (không cho null)
+List<Integer> copy = List.copyOf(src);
+list.removeIf(x -> x < 0);             // xóa an toàn khi đang duyệt
+
+for (Integer x : list) if (x == 1) list.remove(x);       // ConcurrentModificationException!
+list.remove(Integer.valueOf(1));   list.remove(1);       // xóa theo giá trị / theo vị trí
+Collections.unmodifiableList(list);    // chỉ là view: list gốc đổi thì view đổi`],
+            ["a", "Lambda và functional interface", "Interface chỉ có một method trừu tượng là functional interface. Lambda là cách viết gọn instance của nó.",
+                `Function<Integer, Integer> sq = x -> x * x;            sq.apply(3);
+BiFunction<Integer, Integer, Integer> add = (a, b) -> a + b;
+Predicate<String> empty = String::isEmpty;             empty.negate().and(s -> s.length() < 5);
+Supplier<List<String>> sup = ArrayList::new;           // () -> T
+Consumer<String> pr = System.out::println;             // T -> void
+UnaryOperator<String> up = String::toUpperCase;        // T -> T
+@FunctionalInterface interface Validator<T> { boolean ok(T t); }
+
+// Method reference: Class::static, obj::instance, Class::instance, Class::new
+// Lambda chỉ dùng được biến cục bộ "effectively final"
+int base = 10;  Function<Integer, Integer> f = x -> x + base;  // base không được gán lại`],
+            ["a", "Stream API và Optional", "Stream là chuỗi thao tác khai báo trên dữ liệu: nguồn → thao tác trung gian (lười) → thao tác kết thúc. Stream chỉ dùng một lần.",
+                `List<String> r = people.stream()
+    .filter(p -> p.age() >= 18)
+    .sorted(Comparator.comparing(Person::name))
+    .map(Person::name).distinct().limit(10)
+    .toList();                                            // 16+: danh sách bất biến
+
+Map<String, List<Person>> byCity = people.stream().collect(Collectors.groupingBy(Person::city));
+Map<String, Long> count = people.stream().collect(Collectors.groupingBy(Person::city, Collectors.counting()));
+Map<Boolean, List<Person>> parts = people.stream().collect(Collectors.partitioningBy(p -> p.age() > 30));
+String csv = names.stream().collect(Collectors.joining(", ", "[", "]"));
+int total = nums.stream().mapToInt(Integer::intValue).sum();   // stream primitive, tránh boxing
+double avg = people.stream().mapToInt(Person::age).average().orElse(0);
+List<String> flat = lists.stream().flatMap(List::stream).toList();
+IntStream.rangeClosed(1, 5).boxed().toList();
+
+Optional<Person> o = people.stream().filter(p -> p.id() == 1).findFirst();
+o.map(Person::name).orElse("n/a");    o.orElseThrow();    o.ifPresent(System.out::println);`, "Dùng Optional làm kiểu trả về, không dùng làm field hay tham số. Tránh <code>parallelStream()</code> trừ khi đã đo: nó dùng chung ForkJoinPool và hay làm chậm hơn."],
+            ["a", "java.time (ngày giờ)", "Bất biến và an toàn đa luồng. Tránh <code>Date</code>, <code>Calendar</code>, <code>SimpleDateFormat</code> (không thread-safe).",
+                `LocalDate d = LocalDate.of(2026, 10, 15);   d.plusDays(7);   d.getDayOfWeek();   d.isBefore(LocalDate.now());
+LocalDateTime dt = LocalDateTime.now();                  // không có múi giờ
+ZonedDateTime z = ZonedDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
+Instant now = Instant.now();                             // điểm thời gian UTC, hợp lưu DB/log
+Duration.between(t1, t2).toMinutes();                    // khoảng thời gian (giờ/phút/giây)
+Period.between(d1, d2).getMonths();                      // khoảng ngày/tháng/năm
+DateTimeFormatter f = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+dt.format(f);   LocalDate.parse("15/10/2026", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+// Quy tắc: lưu và truyền Instant/UTC, chuyển sang múi giờ người dùng khi hiển thị.`],
+            ["a", "Tính năng Java hiện đại (10 đến 21)", "Dùng khi dự án đã chạy Java 17 hoặc 21.",
+                `var x = List.of(1, 2);                                    // 10
+if (obj instanceof String s && s.length() > 3) { }       // pattern matching (16)
+String desc = switch (shape) {                           // pattern switch (21)
+    case Circle c   -> "tròn " + c.r();
+    case Square sq  -> "vuông " + sq.a();                // sealed: không cần default
+};
+if (o instanceof Person(String name, int age)) { }       // record pattern (21)
+Object v = ...;
+String t = switch (v) { case Integer i when i > 0 -> "dương"; case String s -> s; case null -> "null"; default -> "khác"; };
+
+List<Integer> l = new ArrayList<>(List.of(1, 2, 3));
+l.getFirst();  l.getLast();  l.reversed();               // SequencedCollection (21)
+// Khác: text block (15), record (16), sealed (17), virtual thread (21),
+// HttpClient (11), Files.readString (11), Stream.toList() (16)`],
+            ["a", "Đa luồng cơ bản", "Race condition xảy ra khi nhiều luồng cùng đọc ghi dữ liệu chia sẻ mà không đồng bộ. <code>synchronized</code> đảm bảo loại trừ lẫn nhau và thấy được thay đổi (happens-before).",
+                `Thread t = new Thread(() -> System.out.println("chạy"));  t.start();  t.join();   // start(), không phải run()
+
+class Counter {
+    private int n;
+    synchronized void inc() { n++; }                    // khóa trên this
+    synchronized int get() { return n; }
+}
+private volatile boolean running = true;               // đảm bảo thấy giá trị mới, KHÔNG đảm bảo n++ an toàn
+// Trạng thái: NEW, RUNNABLE, BLOCKED, WAITING, TIMED_WAITING, TERMINATED
+// wait()/notify() phải gọi trong synchronized. Thường dùng BlockingQueue thay thế.
+// Deadlock: hai luồng giữ khóa A và B rồi chờ khóa của nhau
+//   -> luôn khóa theo cùng một thứ tự, hoặc dùng tryLock có timeout
+Thread.currentThread().interrupt();   // xử lý InterruptedException: khôi phục cờ ngắt, đừng nuốt`],
+            ["a", "java.util.concurrent, CompletableFuture", "Dùng thread pool thay vì tự tạo thread. Ưu tiên cấu trúc có sẵn thay vì synchronized và wait/notify.",
+                `ExecutorService pool = Executors.newFixedThreadPool(8);
+Future<Integer> f = pool.submit(() -> compute());         f.get(2, TimeUnit.SECONDS);
+pool.shutdown();   pool.awaitTermination(10, TimeUnit.SECONDS);
+
+CompletableFuture<String> cf = CompletableFuture
+    .supplyAsync(() -> callApi(), pool)
+    .thenApply(String::trim)
+    .thenCombine(other, (a, b) -> a + b)
+    .exceptionally(ex -> "lỗi: " + ex.getMessage());
+CompletableFuture.allOf(cf1, cf2).join();
+
+AtomicInteger ai = new AtomicInteger();   ai.incrementAndGet();      // CAS, không khóa
+ConcurrentHashMap<String, LongAdder> m;   LongAdder dùng khi nhiều luồng tăng đếm
+ReentrantLock lock = new ReentrantLock();  lock.lock(); try { } finally { lock.unlock(); }
+CountDownLatch, Semaphore, CyclicBarrier, BlockingQueue (producer-consumer), ReadWriteLock`, "Kích thước pool: tác vụ CPU ~ số core; tác vụ chờ I/O có thể nhiều hơn. Luôn đặt tên thread và xử lý exception trong tác vụ."],
+            ["a", "Virtual threads (Java 21)", "Thread ảo nhẹ, do JVM lập lịch, cho phép viết code chặn (blocking) đơn giản nhưng chịu được hàng trăm nghìn tác vụ chờ I/O. Không giúp tác vụ nặng CPU.",
+                `try (var ex = Executors.newVirtualThreadPerTaskExecutor()) {
+    for (int i = 0; i < 10_000; i++) ex.submit(() -> { Thread.sleep(1000); return 1; });
+}   // mỗi tác vụ một virtual thread, đóng executor là chờ xong hết
+Thread.ofVirtual().name("v1").start(() -> callApi());
+
+// Lưu ý: đừng gom virtual thread vào pool cố định (không cần). Giới hạn tài nguyên bằng Semaphore.
+// Tránh giữ khóa synchronized lâu quanh thao tác chặn (có thể ghim thread, dùng ReentrantLock).
+// Structured concurrency, scoped values: các API mới hơn, kiểm tra trạng thái trong bản JDK bạn dùng.`],
+            ["a", "Annotation và reflection", "Reflection đọc và thao tác class lúc chạy; là nền tảng của Spring, Hibernate, JUnit. Chậm hơn gọi trực tiếp và phá vỡ đóng gói nên chỉ dùng trong framework.",
+                `@Retention(RetentionPolicy.RUNTIME) @Target(ElementType.METHOD)
+@interface Audit { String value() default ""; }
+
+class Svc { @Audit("tạo") public void create() { } }
+
+Class<?> c = Svc.class;                                  // hoặc obj.getClass(), Class.forName("...")
+for (Method m : c.getDeclaredMethods()) {
+    if (m.isAnnotationPresent(Audit.class)) {
+        String v = m.getAnnotation(Audit.class).value();
+        m.invoke(c.getDeclaredConstructor().newInstance());
+    }
+}
+Field f = c.getDeclaredField("secret");  f.setAccessible(true);   // module system (9+) có thể chặn`],
+            ["a", "JDBC và kết nối cơ sở dữ liệu", "Luôn dùng PreparedStatement (chống SQL injection, tái sử dụng plan) và connection pool như HikariCP.",
+                `String sql = "SELECT id, name FROM users WHERE age > ?";
+try (Connection con = dataSource.getConnection();
+     PreparedStatement ps = con.prepareStatement(sql)) {
+    ps.setInt(1, 18);
+    try (ResultSet rs = ps.executeQuery()) {
+        while (rs.next()) { long id = rs.getLong("id"); String n = rs.getString("name"); }
+    }
+}
+// Giao dịch
+con.setAutoCommit(false);
+try { ps1.executeUpdate(); ps2.executeUpdate(); con.commit(); }
+catch (SQLException e) { con.rollback(); throw e; }
+// Ghi nhiều dòng: ps.addBatch() ... ps.executeBatch();   Đọc nhiều: ps.setFetchSize(500);`],
+            ["p", "Bộ nhớ JVM và Garbage Collector", "Stack: biến cục bộ, mỗi luồng một stack. Heap: mọi object, chia Young (Eden, Survivor) và Old. Metaspace: metadata class (thay PermGen từ Java 8).",
+                `Object mới -> Eden -> (minor GC) -> Survivor -> (đủ tuổi) -> Old -> (major/mixed GC)
+G1 (mặc định từ Java 9): chia heap thành region, cân bằng tốc độ và pause
+ZGC / Shenandoah: pause rất thấp (mili giây), hợp heap lớn
+Parallel GC: throughput cao, pause dài hơn (batch)
+
+Tham chiếu: Strong (mặc định) | Soft (giải phóng khi thiếu RAM, cache) | Weak (WeakHashMap) | Phantom
+Rò rỉ bộ nhớ thường gặp:
+ - static Map/List chỉ thêm không bao giờ xóa (cache không giới hạn)
+ - listener, ThreadLocal không remove (nhất là trong thread pool)
+ - kết nối, stream, ResultSet không đóng
+ - object dùng làm key HashMap bị sửa sau khi thêm`, "OutOfMemoryError có nhiều loại: <code>Java heap space</code>, <code>Metaspace</code>, <code>unable to create native thread</code>. Đọc đúng thông báo trước khi tăng -Xmx."],
+            ["p", "Công cụ chẩn đoán và tham số JVM", "Đo trước khi chỉnh. Hầu hết ứng dụng chỉ cần đặt kích thước heap và bật GC log.",
+                `java -Xms2g -Xmx2g -XX:+UseG1GC -Xlog:gc*:file=gc.log \\
+     -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp -jar app.jar
+
+jcmd <pid> Thread.print        # dump luồng (hoặc jstack <pid>), tìm deadlock, luồng kẹt
+jcmd <pid> GC.heap_info        # tình trạng heap
+jmap -histo <pid>              # thống kê object theo lớp
+jcmd <pid> JFR.start duration=60s filename=rec.jfr    # Java Flight Recorder: đo CPU, GC, lock với chi phí thấp
+# Công cụ: VisualVM, JDK Mission Control (mở .jfr), Eclipse MAT (phân tích heap dump), async-profiler
+javap -c Hello.class           # xem bytecode`],
+            ["p", "Mẹo hiệu năng", "Tối ưu thuật toán và truy cập dữ liệu (DB, mạng) trước; vi tối ưu chỉ sau khi profiler chỉ ra.",
+                `// 1. Chọn đúng cấu trúc dữ liệu: HashMap thay duyệt List để tìm kiếm
+// 2. Biết trước kích thước: new ArrayList<>(n), new HashMap<>(n * 4 / 3 + 1)
+// 3. Chuỗi: StringBuilder trong vòng lặp; tránh regex biên dịch lại: Pattern p = Pattern.compile(...) dùng lại
+// 4. Tránh boxing trong vòng nóng: IntStream, int[] thay List<Integer>
+// 5. Tránh tạo object tạm trong vòng lặp nóng; tái sử dụng khi an toàn
+// 6. I/O: BufferedReader/Writer, batch JDBC, cache dữ liệu đọc nhiều (Caffeine)
+// 7. Log: log.debug("x={}", x), không nối chuỗi trước khi kiểm tra mức
+// 8. Đo vi mô bằng JMH, không dùng System.nanoTime() một lần (JIT khởi động chậm)
+// 9. Tránh finalize(), tránh synchronized phạm vi rộng, ưu tiên bất biến
+// 10. N+1 query ở ORM là nguyên nhân chậm số một trong ứng dụng web: dùng join fetch hoặc batch`],
+            ["p", "SOLID, mẫu thiết kế thường dùng", "Mục tiêu: code dễ đổi, dễ test. Dùng khi giải quyết đúng vấn đề, không dùng cho đẹp.",
+                `S  Một lớp một lý do để thay đổi          O  Mở rộng được, không phải sửa code cũ
+L  Lớp con thay được lớp cha, không vỡ     I  Interface nhỏ, đúng nhu cầu
+D  Phụ thuộc vào abstraction (DI), không vào lớp cụ thể
+
+// Singleton an toàn nhất: enum
+enum Config { INSTANCE; String get(String k) { return ...; } }
+// Builder: nhiều tham số tùy chọn         Person.builder().name("An").age(20).build();
+// Factory: ẩn việc tạo object             Notifier n = NotifierFactory.of("email");
+// Strategy: đổi thuật toán lúc chạy       Comparator, hoặc Map<String, Function<...>>
+// Observer: listener/event                Dependency Injection: truyền phụ thuộc qua constructor
+public class OrderService {
+    private final Repo repo;                   // bất biến, dễ test bằng mock
+    public OrderService(Repo repo) { this.repo = repo; }
+}`],
+            ["p", "Test và công cụ build", "JUnit 5 + Mockito là bộ chuẩn. Viết test nhỏ, độc lập, tên nói rõ hành vi.",
+                `class CalcTest {
+    @Test void adds() { assertEquals(5, new Calc().add(2, 3)); }
+    @Test void throwsOnZero() {
+        assertThrows(ArithmeticException.class, () -> new Calc().div(1, 0));
+    }
+    @ParameterizedTest @ValueSource(ints = {1, 2, 3})
+    void positive(int n) { assertTrue(n > 0); }
+    @Test void mocks() {
+        Repo repo = mock(Repo.class);
+        when(repo.find(1)).thenReturn(new User("An"));
+        assertEquals("An", new Svc(repo).name(1));
+        verify(repo).find(1);
+    }
+}
+// Maven: mvn clean test | mvn package | mvn dependency:tree      (pom.xml)
+// Gradle: ./gradlew test build                                    (build.gradle)
+// Phạm vi dependency: compile, provided, runtime, test. Dùng BOM để thống nhất phiên bản.`],
+            ["p", "Bẫy thường gặp (tự kiểm tra)", "Đoán kết quả trước khi chạy.",
+                `"a" + 1 + 2;               // "a12"       1 + 2 + "a"  // "3a"
+'a' + 1;                    // 98 (int)    (char) ('a' + 1)  // 'b'
+Integer.MIN_VALUE == -Integer.MIN_VALUE;   // true (tràn số)
+Math.abs(Integer.MIN_VALUE);               // vẫn âm
+System.out.println((Object) null instanceof String);   // false
+List<Integer> l = new ArrayList<>(List.of(1, 2, 3));   l.remove(1);   // xóa VỊ TRÍ 1, còn [1, 3]
+Boolean b = null; if (b) { }                // NullPointerException khi unbox
+int r = cond ? 1 : null;                    // NPE khi unbox null
+try { return 1; } finally { return 2; }     // trả 2, finally ghi đè
+new HashSet<>(List.of(1, 1)).size();        // List.of(1,1) OK, Set.of(1,1) ném lỗi
+double d = 1 / 2;                           // 0.0 (chia số nguyên trước)
+String s = null;  s + "x";                  // "nullx", không lỗi
+// SimpleDateFormat, Calendar: không thread-safe -> dùng java.time`]
+        ];
+        const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        const KW = "abstract assert boolean break byte case catch char class const continue default do double else enum extends final finally float for if implements import instanceof int interface long new package private protected public return short static super switch synchronized this throw throws try void volatile while var record sealed permits yield null true false when";
+        const re = new RegExp("(\\/\\*[\\s\\S]*?\\*\\/|\\/\\/.*|#.*)|(\"\"\"[\\s\\S]*?\"\"\"|\"[^\"\\n]*\"|'[^'\\n]*')|(@[A-Za-z]+)|\\b(" + KW.split(" ").join("|") + ")\\b|\\b(\\d[\\d_]*\\.?\\d*[LlFf]?)\\b", "g");
+        const hl = c => esc(c).replace(re, (m, cm, s, an, k, n) => cm ? "<em>" + cm + "</em>" : s ? "<i>" + s + "</i>" : an ? "<s>" + an + "</s>" : k ? "<b>" + k + "</b>" : "<u>" + n + "</u>");
+        const main = document.getElementById("main"), nav = document.getElementById("nav");
+        let last = "", navHtml = "";
+        S.forEach((x, i) => {
+            const [l, title, d, code, tip] = x;
+            if (l !== last) {
+                last = l;
+                main.insertAdjacentHTML("beforeend", `<div class="lvl ${l}" data-l="${l}">${LV[l][0]}<small>${LV[l][1]}</small></div>`);
+                navHtml += `<h4 class="${l}" style="color:var(--l)">${LV[l][0]}</h4>`;
+            }
+            main.insertAdjacentHTML("beforeend", `<section class="card ${l}" id="s${i}" data-l="${l}"><h3>${title}</h3><p>${d}</p><div class="cb"><button class="cp">Sao chép</button><pre><code>${hl(code)}</code></pre></div>${tip ? `<div class="tip">${tip}</div>` : ""}</section>`);
+            navHtml += `<a class="${l}" href="#s${i}">${title}</a>`;
+        });
+        nav.innerHTML = navHtml;
+        let fl = "all", q = "";
+        function apply() {
+            document.querySelectorAll("main [data-l]").forEach(e => {
+                const card = e.tagName === "SECTION";
+                const ok = (fl === "all" || e.dataset.l === fl) && (!card || !q || e.textContent.toLowerCase().includes(q));
+                e.classList.toggle("hide", !ok);
+            });
+        }
+        document.querySelectorAll(".bar button").forEach(b => b.onclick = () => {
+            fl = b.dataset.l; document.querySelectorAll(".bar button").forEach(x => x.classList.toggle("on", x === b)); apply();
+        });
+        document.getElementById("q").oninput = e => { q = e.target.value.trim().toLowerCase(); apply(); };
+        main.addEventListener("click", e => {
+            if (!e.target.classList.contains("cp")) return;
+            const t = e.target.nextElementSibling.textContent;
+            navigator.clipboard && navigator.clipboard.writeText(t).then(() => { e.target.textContent = "Đã chép"; setTimeout(() => e.target.textContent = "Sao chép", 1200); });
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tóm tắt VS Code và Chrome DevTools: thủ thuật và kinh nghiệm</title>
+  <style>
+    :root {
+      --bg: #f1f5f9;
+      --card: #fff;
+      --text: #1d2433;
+      --mut: #5d6679;
+      --line: #dbe3ec;
+      --code: #f1f5f9;
+      --c: #0b9a76;
+      --cb: #e1f6ef;
+      --m: #d97706;
+      --mb: #fdf0d9;
+      --a: #7c3aed;
+      --ab: #efe7fe;
+      --pf: #c74634;
+      --pfb: #fde8e4;
+      --k: #c026d3;
+      --s: #0b8a5f;
+      --n: #d97706;
+      --cm: #8a93a6;
+      --p: #2563eb
+    }
+
+    @media (prefers-color-scheme:dark) {
+      :root {
+        --bg: #10161d;
+        --card: #18212b;
+        --text: #e8eef5;
+        --mut: #9aaabd;
+        --line: #2b3a4a;
+        --code: #0d1319;
+        --c: #34d3a8;
+        --cb: #12332c;
+        --m: #fbbf24;
+        --mb: #3a2d10;
+        --a: #a78bfa;
+        --ab: #2a2150;
+        --pf: #fb7a65;
+        --pfb: #3d1b16;
+        --k: #f0abfc;
+        --s: #6ee7b7;
+        --n: #fbbf24;
+        --cm: #6f8096;
+        --p: #7dd3fc
+      }
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 16px/1.6 system-ui, "Segoe UI", Roboto, sans-serif
+    }
+
+    header {
+      background: linear-gradient(100deg, #007acc, #1a73e8 55%, #ea4335);
+      color: #fff;
+      padding: 28px 20px 22px
+    }
+
+    header h1 {
+      margin: 0 0 4px;
+      font-size: clamp(24px, 4vw, 36px)
+    }
+
+    header p {
+      margin: 0;
+      opacity: .95
+    }
+
+    .bar {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: var(--card);
+      border-bottom: 1px solid var(--line);
+      padding: 10px 16px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center
+    }
+
+    .bar button,
+    .bar input {
+      font: inherit;
+      font-size: 14px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: var(--text);
+      padding: 5px 14px
+    }
+
+    .bar button {
+      cursor: pointer
+    }
+
+    .bar button.on {
+      border-color: transparent;
+      color: #fff;
+      background: #c74634
+    }
+
+    .bar button[data-l=c].on {
+      background: var(--c);
+      color: #06231b
+    }
+
+    .bar button[data-l=m].on {
+      background: var(--m);
+      color: #2b1a00
+    }
+
+    .bar button[data-l=a].on {
+      background: var(--a)
+    }
+
+    .bar button[data-l=p].on {
+      background: var(--pf);
+      color: #fff
+    }
+
+    .bar input {
+      flex: 1;
+      min-width: 140px;
+      max-width: 280px;
+      margin-left: auto
+    }
+
+    .wrap {
+      display: flex;
+      gap: 24px;
+      max-width: 1150px;
+      margin: 0 auto;
+      padding: 20px 16px
+    }
+
+    aside {
+      width: 215px;
+      flex: none;
+      position: sticky;
+      top: 64px;
+      align-self: flex-start;
+      max-height: calc(100vh - 80px);
+      overflow: auto;
+      font-size: 14px
+    }
+
+    aside h4 {
+      margin: 12px 0 4px;
+      font-size: 14px
+    }
+
+    aside a {
+      display: block;
+      padding: 3px 8px;
+      color: var(--text);
+      text-decoration: none;
+      border-radius: 6px;
+      border-left: 3px solid var(--l)
+    }
+
+    aside a:hover {
+      background: var(--card)
+    }
+
+    main {
+      flex: 1;
+      min-width: 0
+    }
+
+    .lvl {
+      margin: 26px 0 12px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 20px;
+      font-weight: 700;
+      background: var(--lb);
+      color: var(--l)
+    }
+
+    .lvl small {
+      display: block;
+      font-weight: 400;
+      font-size: 14px;
+      color: var(--mut)
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-left: 6px solid var(--l);
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin: 0 0 14px
+    }
+
+    .card h3 {
+      margin: 0 0 6px;
+      font-size: 18px;
+      color: var(--l)
+    }
+
+    .card p {
+      margin: 4px 0 8px;
+      color: var(--mut)
+    }
+
+    .tip {
+      background: var(--lb);
+      border-radius: 8px;
+      padding: 6px 10px;
+      margin: 8px 0 0;
+      font-size: 14px
+    }
+
+    code {
+      font-family: ui-monospace, Consolas, Menlo, monospace
+    }
+
+    .cb {
+      position: relative;
+      margin: 8px 0 0
+    }
+
+    pre {
+      margin: 0;
+      padding: 12px 14px;
+      background: var(--code);
+      border-radius: 8px;
+      overflow-x: auto;
+      font: 13.5px/1.55 ui-monospace, Consolas, Menlo, monospace
+    }
+
+    pre b {
+      font-weight: 400;
+      color: var(--k)
+    }
+
+    pre i {
+      font-style: normal;
+      color: var(--s)
+    }
+
+    pre u {
+      text-decoration: none;
+      color: var(--n)
+    }
+
+    pre em {
+      font-style: normal;
+      color: var(--cm)
+    }
+
+    pre s {
+      text-decoration: none;
+      color: var(--p)
+    }
+
+    .cp {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      font-size: 12px;
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: var(--mut);
+      border-radius: 6px;
+      padding: 1px 8px;
+      cursor: pointer
+    }
+
+    .p {
+      --l: var(--pf);
+      --lb: var(--pfb)
+    }
+
+    .c {
+      --l: var(--c);
+      --lb: var(--cb)
+    }
+
+    .m {
+      --l: var(--m);
+      --lb: var(--mb)
+    }
+
+    .a {
+      --l: var(--a);
+      --lb: var(--ab)
+    }
+
+    .hide {
+      display: none
+    }
+
+    @media (max-width:860px) {
+      aside {
+        display: none
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- <header><h1>VS Code và Chrome DevTools</h1><p>Phím tắt, cấu hình, debug, và kinh nghiệm tìm lỗi nhanh. Phím tắt ghi theo Windows/Linux; trên macOS đổi Ctrl thành Cmd, Alt thành Option.</p></header> -->
+  <div class="bar">
+    <button data-l="all" class="on">Mọi cấp</button><button data-l="c">VS Code cơ bản</button><button data-l="m">VS Code
+      nâng cao</button><button data-l="a">Chrome DevTools</button><button data-l="p">Kinh nghiệm</button>
+    <input id="q" type="search" placeholder="Tìm: breakpoint, network, snippet, git...">
+  </div>
+  <div class="wrap">
+    <aside id="nav"></aside>
+    <main id="main"></main>
+  </div>
+  <script>
+    const LV = { c: ["VS Code cơ bản", "Phím tắt, soạn thảo nhanh, tìm kiếm, terminal, extension"], m: ["VS Code nâng cao", "Settings, format và lint, debug, snippet, Git, Java, remote"], a: ["Chrome DevTools", "Elements, Console, Sources, Network, Application, Performance"], p: ["Kinh nghiệm và quy trình", "Cách tìm lỗi, bảng triệu chứng, lỗi hay gặp, an toàn, thói quen tốt"] };
+    const S = [
+      ["c", "Phím tắt điều hướng quan trọng nhất", "Học 5 phím đầu tiên trước: Command Palette và Quick Open giúp bạn làm gần như mọi thứ mà không cần chuột.",
+        `Ctrl+Shift+P (hoặc F1)   Command Palette: gõ tên lệnh bất kỳ
+Ctrl+P                    Mở nhanh file theo tên (gõ :số để nhảy tới dòng, @ để tìm symbol)
+Ctrl+Shift+O              Tìm symbol (hàm, class) trong file hiện tại
+Ctrl+T                    Tìm symbol trong cả dự án
+Ctrl+G                    Đi tới dòng
+F12 / Alt+F12 / Shift+F12 Đến định nghĩa / xem nhanh (peek) / tìm mọi nơi tham chiếu
+Alt+Left / Alt+Right      Quay lại / tiến tới vị trí con trỏ trước đó
+Ctrl+B                    Ẩn/hiện thanh bên          Ctrl+K Z   Zen mode (chỉ còn code)
+Ctrl+\\                    Chia đôi editor           Ctrl+1/2/3 Chuyển giữa các nhóm editor
+Ctrl+Tab                  Chuyển file đã mở         Ctrl+W     Đóng tab
+Ctrl+Shift+T              Mở lại tab vừa đóng
+Ctrl+K Ctrl+S             Xem và đổi toàn bộ phím tắt`, "Cách dùng hiệu quả: gõ lệnh vào Command Palette, phím tắt sẽ hiện bên phải; lệnh nào dùng nhiều thì nhớ phím đó."],
+      ["c", "Soạn thảo nhanh", "Multi-cursor và các thao tác theo dòng tiết kiệm rất nhiều thao tác lặp lại.",
+        `Alt+Up / Alt+Down              Di chuyển dòng lên/xuống
+Shift+Alt+Up / Down            Nhân bản dòng
+Ctrl+Shift+K                   Xóa dòng        Ctrl+Enter  Chèn dòng mới bên dưới
+Ctrl+D                         Chọn lần lượt các lần xuất hiện của từ đang chọn (multi-cursor)
+Ctrl+Shift+L                   Chọn TẤT CẢ lần xuất hiện của từ
+Alt+Click                      Thêm con trỏ tại vị trí nhấp
+Ctrl+Alt+Up / Down             Thêm con trỏ ở dòng trên/dưới (sửa theo cột)
+Shift+Alt+drag                 Chọn theo cột
+F2                             Đổi tên biến/hàm trên toàn dự án (an toàn hơn tìm và thay thế)
+Ctrl+.                         Quick Fix: sửa lỗi, import thiếu, extract hàm/biến
+Ctrl+/   Shift+Alt+A           Comment dòng / khối
+Shift+Alt+F                    Format file         Ctrl+K Ctrl+F  Format vùng chọn
+Ctrl+Shift+[  /  ]             Thu gọn / mở khối code
+Tab sau emmet: ! (HTML mẫu), ul>li*3, div.card>h2+p, .box{margin:0}, lorem`],
+      ["c", "Tìm kiếm và thay thế", "Tìm trong cả dự án là công cụ mạnh nhất để hiểu một codebase lạ.",
+        `Ctrl+F / Ctrl+H          Tìm / thay trong file
+Ctrl+Shift+F             Tìm trong cả dự án;  Ctrl+Shift+H  Thay trong cả dự án
+Alt+C  Alt+W  Alt+R      Bật/tắt: phân biệt hoa thường / nguyên từ / regex
+Mẹo regex:   \\bfoo\\b     tìm từ nguyên     (\\w+)@(\\w+)   dùng $1 $2 ở ô thay thế
+Ô "files to include": src/**/*.java, *.ts      Ô "files to exclude": **/node_modules, **/*.min.js
+F4 / Shift+F4            Nhảy tới kết quả tìm kiếm kế tiếp / trước
+Ctrl+Shift+F + chọn "Open in editor": mở kết quả thành tab để duyệt và lưu lại`, "Trước khi nhấn Replace All, hãy xem trước từng kết quả trong danh sách. Trong dự án lớn, loại thư mục build và thư viện (node_modules, target, dist) để kết quả sạch."],
+      ["c", "Terminal, Explorer, Source Control", "Mọi thứ nằm trong một cửa sổ: sửa code, chạy lệnh, commit.",
+        `Ctrl+\`                    Bật/tắt terminal tích hợp (phím huyền, dưới Esc)
+Ctrl+Shift+\`              Mở terminal mới          Ctrl+Shift+5   Chia đôi terminal
+Ctrl+Shift+E               Explorer: tạo file (N), thư mục, kéo thả, đổi tên (F2)
+Ctrl+Shift+G               Source Control: xem thay đổi, stage, commit (Ctrl+Enter)
+Ctrl+Shift+X               Extensions        Ctrl+Shift+M   Problems (lỗi/cảnh báo)
+Ctrl+Shift+U               Output            Ctrl+Shift+Y   Debug Console
+Ctrl+,                     Settings          Ctrl+K Ctrl+O  Mở thư mục khác
+code .                     (trong terminal) mở thư mục hiện tại bằng VS Code`],
+      ["c", "Extension nên cài", "Cài vừa đủ: mỗi extension thêm vào thời gian khởi động. Dùng Profiles để tách bộ cho web, Java, viết tài liệu.",
+        `Chung:       GitLens (blame, lịch sử dòng), Error Lens (hiện lỗi ngay trên dòng),
+             Code Spell Checker, Material Icon Theme, Todo Tree, EditorConfig for VS Code
+Web:         ESLint, Prettier, Auto Rename Tag, Path Intellisense, Live Server (hoặc dùng Vite),
+             Tailwind CSS IntelliSense, CSS Peek, Live Preview
+Java:        Extension Pack for Java (Language Support, Debugger, Test Runner, Maven, Project Manager),
+             Spring Boot Extension Pack
+CSDL:        Oracle SQL Developer Extension for VS Code, SQLTools
+API:         Thunder Client hoặc REST Client (file .http để gửi request)
+Container:   Docker, Dev Containers, Remote - SSH, WSL`, "Chỉ cài extension từ nhà phát hành đáng tin (xem số lượt tải, nhà phát hành đã xác minh). Extension chạy với quyền của bạn."],
+      ["m", "Settings: user và workspace", "Có hai mức: User (mọi dự án) và Workspace (<code>.vscode/settings.json</code>, chia sẻ cho cả nhóm). Mở bằng Ctrl+Shift+P gõ Open Settings (JSON).",
+        `{
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": { "source.fixAll.eslint": "explicit" },
+  "editor.tabSize": 2,
+  "editor.wordWrap": "off",
+  "editor.minimap.enabled": false,
+  "editor.stickyScroll.enabled": true,
+  "editor.bracketPairColorization.enabled": true,
+  "editor.cursorSmoothCaretAnimation": "on",
+  "files.autoSave": "onFocusChange",
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.exclude": { "**/.git": true, "**/node_modules": true },
+  "search.exclude": { "**/dist": true, "**/target": true, "**/*.min.js": true },
+  "[java]": { "editor.defaultFormatter": "redhat.java", "editor.tabSize": 4 },
+  "terminal.integrated.defaultProfile.windows": "Git Bash"
+}`],
+      ["m", "Format và lint thống nhất trong nhóm", "Prettier lo định dạng, ESLint lo lỗi logic. Đặt file cấu hình trong repo để mọi người cùng quy tắc, bất kể ai dùng editor nào.",
+        `// .prettierrc
+{ "semi": true, "singleQuote": true, "printWidth": 100, "trailingComma": "all" }
+
+// .editorconfig
+root = true
+[*]
+indent_style = space
+indent_size = 2
+end_of_line = lf
+charset = utf-8
+insert_final_newline = true
+
+// package.json
+"scripts": { "lint": "eslint .", "format": "prettier --write ." }`, "Đừng để ESLint và Prettier tranh nhau: cài <code>eslint-config-prettier</code> để ESLint bỏ qua các quy tắc về định dạng."],
+      ["m", "Debug ngay trong VS Code", "Dùng debugger thay cho console.log: dừng đúng dòng, xem biến, đi từng bước. Cấu hình ở <code>.vscode/launch.json</code>; mở bằng Ctrl+Shift+D rồi Create a launch.json.",
+        `{
+  "version": "0.2.0",
+  "configurations": [
+    { "name": "Node: chạy file hiện tại", "type": "node", "request": "launch",
+      "program": "\${file}", "skipFiles": ["<node_internals>/**"] },
+    { "name": "Chrome: mở trang Vite", "type": "chrome", "request": "launch",
+      "url": "http://localhost:5173", "webRoot": "\${workspaceFolder}/src" },
+    { "name": "Java: Main", "type": "java", "request": "launch",
+      "mainClass": "com.example.App", "projectName": "app" },
+    { "name": "Node: gắn vào process", "type": "node", "request": "attach", "port": 9229 }
+  ]
+}
+// F5 chạy   F9 đặt breakpoint   F10 step over   F11 step into   Shift+F11 step out
+// Chuột phải breakpoint: Conditional (x > 5), Hit count, Logpoint (in log mà không sửa code)`, "Logpoint (nhập <code>Giá trị x = {x}</code>) thay được console.log mà không cần sửa file và quên xóa."],
+      ["m", "Snippet, task, workspace", "Tự động hóa thao tác lặp lại và chia sẻ cấu hình cho cả nhóm.",
+        `// Snippet riêng: Ctrl+Shift+P > Snippets: Configure Snippets
+{
+  "Log nhanh": {
+    "prefix": "clg",
+    "body": ["console.log('$1:', $1);", "$0"],
+    "description": "console.log có nhãn"
+  }
+}
+
+// .vscode/tasks.json: chạy lệnh bằng Ctrl+Shift+B
+{ "version": "2.0.0", "tasks": [
+  { "label": "build", "type": "shell", "command": "npm run build", "group": "build" } ] }
+
+// .vscode/extensions.json: gợi ý extension cho người mới clone dự án
+{ "recommendations": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"] }
+
+// Profiles: Ctrl+Shift+P > Profiles: Create Profile (bộ cài đặt và extension riêng cho từng loại việc)`],
+      ["m", "Git trong VS Code", "Giao diện diff và merge giúp tránh sai sót khi commit hoặc gộp nhánh.",
+        `Source Control > nhấp file        Xem diff hai bên; chọn dòng rồi Stage Selected Ranges để commit từng phần
+Timeline (cuối Explorer)          Lịch sử thay đổi của file hiện tại
+GitLens: rê chuột lên dòng        Ai sửa, khi nào, commit nào;  File History, Line History
+Merge Editor (khi xung đột)       Hiện Incoming | Current | Result, chọn từng khối, đánh dấu đã giải quyết
+Command Palette:  Git: Stash, Git: Checkout to..., Git: Create Branch, Git: Clone
+Ctrl+Enter trong ô message        Commit
+Gợi ý: commit nhỏ, thông điệp rõ (feat: ..., fix: ...). Xem lại diff trước khi commit để bắt console.log và mật khẩu quên xóa.`],
+      ["m", "Java và Oracle trong VS Code", "Phù hợp cho dự án nhỏ, microservice. Dự án lớn nhiều module nên cân nhắc IntelliJ IDEA.",
+        `// Cần JDK đã cài. Khai báo nhiều JDK trong settings.json:
+"java.configuration.runtimes": [
+  { "name": "JavaSE-17", "path": "C:/Java/jdk-17" },
+  { "name": "JavaSE-21", "path": "C:/Java/jdk-21", "default": true }
+],
+"java.format.settings.url": ".vscode/java-style.xml",
+"java.compile.nullAnalysis.mode": "automatic"
+
+// Các thao tác: Run / Debug hiện trên main và @Test; Java: Clean Java Language Server Workspace
+// khi dự án nhận sai class hoặc báo lỗi vô lý; Maven view trong thanh bên để chạy goal.
+// Oracle: dùng extension Oracle SQL Developer để kết nối, chạy .sql và xem execution plan
+// Lưu thông tin kết nối trong cấu hình cục bộ, KHÔNG commit mật khẩu.`],
+      ["m", "Làm việc từ xa: WSL, SSH, Dev Containers", "Code chạy ở môi trường khác nhưng giao diện vẫn là VS Code trên máy bạn. Giải quyết lỗi chỉ chạy được trên máy tôi.",
+        `WSL (Windows)       Cài extension WSL, gõ  code .  trong terminal WSL. Dự án nằm trong ổ Linux để chạy nhanh.
+Remote - SSH        Ctrl+Shift+P > Remote-SSH: Connect to Host. Sửa file và chạy terminal trên server.
+Dev Containers      Thêm .devcontainer/devcontainer.json: dự án chạy trong container đã định nghĩa JDK, Node, CSDL.
+Live Share          Cùng sửa và debug với đồng đội theo thời gian thực.
+Port forwarding     Tab Ports: chuyển cổng từ server về máy để mở bằng trình duyệt.`],
+      ["a", "Mở DevTools và các phím chính", "Mở bằng F12, Ctrl+Shift+I hoặc chuột phải chọn Inspect. Ctrl+Shift+C bật chế độ chọn phần tử trên trang.",
+        `F12 / Ctrl+Shift+I      Mở DevTools         Ctrl+Shift+C   Chọn phần tử để kiểm tra
+Ctrl+Shift+J            Mở thẳng Console    Ctrl+Shift+M   Chế độ thiết bị (mobile)
+Ctrl+Shift+P            Command Menu: gõ screenshot, coverage, dark, disable javascript...
+Ctrl+P                  Mở nhanh file trong tab Sources     Ctrl+Shift+F  Tìm trong mọi file đã tải
+Ctrl+[ / Ctrl+]         Chuyển panel trái/phải              Esc  Bật/tắt ngăn Console dưới các panel
+Ctrl+R / Ctrl+Shift+R   Tải lại / tải lại bỏ cache
+Dock side: ba chấm > Dock side (phải, dưới, cửa sổ riêng); ba chấm > Settings để bật Dark theme`, "Command Menu (Ctrl+Shift+P) có lệnh Capture full size screenshot, Show Coverage, Show Rendering..., rất hữu ích mà không nằm sẵn trên giao diện."],
+      ["a", "Elements: sửa HTML và CSS tại chỗ", "Mọi chỉnh sửa chỉ ở trình duyệt, tải lại là mất; dùng để thử nghiệm nhanh rồi chép lại vào code.",
+        `Nhấp đúp vào thuộc tính / nội dung        Sửa trực tiếp;   H  ẩn phần tử;   Delete  xóa phần tử
+Kéo thả node trong cây DOM                Thử đổi thứ tự phần tử
+Styles pane: bật/tắt dấu tick, Ctrl+Click giá trị màu, dùng ↑ ↓ để tăng giảm số
+:hov (nút nhỏ ở Styles)                   Ép trạng thái :hover :focus :active :visited để chỉnh style
+.cls                                      Thêm/bỏ class nhanh để thử
+Computed                                  Giá trị cuối cùng và NGUỒN của từng thuộc tính; tick để thấy luật nào đè luật nào
+Layout                                    Hiện lưới Grid/Flexbox, đường kẻ, tên vùng; badge  flex  grid  ở cây DOM
+Box model                                 Rê chuột để thấy margin / border / padding / content
+Changes (Ctrl+Shift+P > Show Changes)     Danh sách mọi thay đổi bạn đã sửa, để chép về code
+$0                                        Phần tử đang chọn, dùng được trong Console (chọn xong gõ $0.classList)`],
+      ["a", "Console: những API hữu ích hơn console.log", "Console vừa là nơi xem log, vừa là shell chạy JavaScript ngay trên trang.",
+        `console.table(users);                    // bảng, dễ xem mảng object
+console.group('Giỏ hàng'); console.log(a); console.groupEnd();
+console.time('load'); ... console.timeEnd('load');     // đo thời gian
+console.assert(x > 0, 'x phải dương');   // chỉ in khi sai
+console.trace('ai gọi tôi?');            // in call stack
+console.dir(el);                         // xem phần tử như object, không như HTML
+console.log('%c Lỗi', 'color:red;font-size:20px');     // định dạng
+console.error / warn / info / debug      // lọc theo mức ở thanh Levels
+
+$0  $1                  // phần tử chọn gần nhất trong Elements
+$_                      // kết quả của biểu thức trước
+$('.btn')  $$('li')     // querySelector, querySelectorAll (trả về mảng)
+copy(obj)               // chép đối tượng ra clipboard dạng JSON
+getEventListeners($0)   // xem listener gắn vào phần tử
+monitor(fn)  debug(fn)  // log khi hàm được gọi / dừng khi hàm được gọi
+monitorEvents($0, 'click')
+await fetch('/api/me').then(r => r.json())   // top-level await chạy được trong Console
+// Live Expression (biểu tượng con mắt): theo dõi biểu thức liên tục
+// Preserve log: giữ log khi chuyển trang`],
+      ["a", "Sources: debug JavaScript", "Panel debug mạnh nhất. Mở file bằng Ctrl+P, nhấp số dòng để đặt breakpoint.",
+        `Loại breakpoint
+  Dòng thường        Nhấp số dòng
+  Conditional        Chuột phải số dòng > Add conditional: userId === 42
+  Logpoint           Chuột phải > Add logpoint: 'giá trị', total   (không dừng, chỉ in)
+  DOM breakpoint     Elements > chuột phải node > Break on: subtree modifications / attribute / node removal
+  XHR/fetch          Sources > XHR/fetch Breakpoints > nhập một phần URL
+  Event listener     Event Listener Breakpoints > Mouse > click (biết ai bắt sự kiện)
+  Exception          Pause on exceptions (biểu tượng dừng), có thể chọn caught
+Điều khiển:  F8 tiếp tục   F10 step over   F11 step into   Shift+F11 step out   Ctrl+; bước tiếp
+Panel:       Call Stack (ai gọi), Scope (biến Local/Closure/Global), Watch (biểu thức theo dõi)
+Ignore list: bỏ qua code thư viện khi step (Settings > Ignore List)
+
+debugger;     // viết trong code để dừng đúng chỗ khi DevTools đang mở`, "Dùng Source Map: build có sourcemap thì DevTools hiện code gốc (TypeScript, JSX) thay vì code đã nén. Dev server như Vite bật sẵn."],
+      ["a", "Sources nâng cao: Snippets, Overrides, Workspaces", "Ba công cụ giúp sửa và thử mà không cần build lại.",
+        `Snippets      Sources > Snippets > New: lưu đoạn JS dùng lại, chạy bằng Ctrl+Enter
+Overrides     Sources > Overrides > chọn thư mục: sửa bất kỳ file (HTML/CSS/JS/JSON phản hồi API) và thay đổi
+              được giữ sau khi tải lại -> thử sửa code của site đã triển khai mà không cần quyền truy cập
+Workspaces    Thêm thư mục dự án vào Sources: sửa trong DevTools sẽ lưu thẳng vào file thật
+Local edit    Ctrl+S trong Sources lưu thay đổi JS/CSS tạm thời vào phiên chạy (Live edit)`],
+      ["a", "Network: xem và thử mọi request", "Nơi xử lý hơn một nửa lỗi ứng dụng web: gọi API sai, trả lỗi, chậm, bị chặn.",
+        `Mở panel TRƯỚC khi tải trang để bắt mọi request.  Bật: Preserve log, Disable cache (khi DevTools mở)
+Filter:   Fetch/XHR (chỉ API), JS, CSS, Img;    ô lọc:  status-code:404   method:POST   larger-than:1M   domain:api.*
+Mỗi request:
+  Headers   URL, method, status, request/response headers (Authorization, Content-Type, Cache-Control, CORS)
+  Payload   Dữ liệu gửi đi (query, form, JSON body)
+  Preview   Phản hồi đã định dạng       Response   Thô
+  Timing    Queueing > DNS > Connect > TLS > Waiting (TTFB) > Content Download
+  Initiator Code nào gây ra request (chuỗi gọi)
+Chuột phải request:  Copy > Copy as fetch / Copy as cURL (dán vào Postman, terminal, Console để chạy lại)
+                     Block request URL (kiểm tra khi tài nguyên lỗi);   Replay XHR
+Throttling:  Fast 4G / Slow 4G / Offline;  tạo profile riêng
+Status: 200 OK, 304 dùng cache, 401 chưa xác thực, 403 cấm, 404 sai đường dẫn, 429 bị giới hạn tốc độ, 500 lỗi server
+Waterfall:  vạch dài = chậm; nhìn TTFB cao (server chậm) hay Download cao (file quá lớn)`],
+      ["a", "Application: lưu trữ, cookie, service worker", "Kiểm tra dữ liệu mà trang lưu trên trình duyệt.",
+        `Local Storage / Session Storage   Xem, sửa, xóa từng key;  chuột phải > Clear
+Cookies                           Giá trị, Domain, Path, Expires, HttpOnly, Secure, SameSite
+IndexedDB, Cache Storage          Dữ liệu offline của ứng dụng
+Service Workers                   Update / Unregister / Bypass for network (khi trang kẹt phiên bản cũ)
+Storage > Clear site data         Xóa sạch trạng thái để test lại từ đầu (đăng nhập, cache)
+
+// Lệnh trong Console để thử nhanh:
+localStorage.setItem('theme', 'dark');   JSON.parse(localStorage.getItem('user'));
+document.cookie;    // chỉ thấy cookie KHÔNG HttpOnly`],
+      ["a", "Performance, Memory, Lighthouse", "Đo trước khi tối ưu. Dùng cửa sổ ẩn danh (không có extension) để số liệu không bị nhiễu.",
+        `Performance:  Record (Ctrl+E) > thao tác trên trang > Stop. Xem: Main (flame chart, Long Task đỏ > 50 ms),
+              Frames, Network, Timings (FCP, LCP). Chọn đoạn để xem hàm nào tốn CPU nhiều nhất (Bottom-Up).
+              CPU throttling 4x/6x để mô phỏng máy yếu.
+Memory:       Heap snapshot (chụp 2 lần, so sánh > tìm object tăng mãi), Allocation timeline (rò rỉ khi lặp thao tác),
+              Detached elements: DOM đã gỡ nhưng JS còn giữ tham chiếu.
+Coverage:     Ctrl+Shift+P > Show Coverage > Reload: phần trăm CSS/JS chưa dùng (màu đỏ).
+Lighthouse:   Performance, Accessibility, Best Practices, SEO; xem Opportunities và Diagnostics
+Rendering:    Paint flashing (vùng vẽ lại), Layout Shift Regions, Emulate prefers-color-scheme / reduced motion
+Core Web Vitals:  LCP (tải phần lớn nhất) <= 2.5 s,  INP (phản hồi) <= 200 ms,  CLS (xê dịch bố cục) <= 0.1`],
+      ["a", "Chế độ thiết bị, Recorder, mẹo hay", "Kiểm tra giao diện responsive và ghi lại luồng thao tác.",
+        `Device toolbar (Ctrl+Shift+M)   Chọn thiết bị hoặc nhập kích thước; xoay ngang; Throttle mạng và CPU; Show media queries
+                                Kết quả chỉ mô phỏng: nên thử trên thiết bị thật (chrome://inspect)
+Recorder panel                  Ghi lại thao tác (nhấp, gõ), phát lại, xuất sang Puppeteer/Playwright, đo hiệu năng luồng
+Command Menu > Capture full size screenshot / node screenshot
+Settings > Preferences > Appearance, Console (Eager evaluation, Autocomplete), Sources (JavaScript source maps)
+chrome://inspect                Debug trang trên điện thoại Android hoặc process Node: node --inspect app.js`],
+      ["p", "Quy trình tìm lỗi (đừng đoán)", "Quy trình lặp lại được giúp bạn không bị lạc: tái hiện, thu hẹp, giả thuyết, kiểm chứng.",
+        `1. Tái hiện ổn định.   Ghi lại các bước, dữ liệu vào, trình duyệt, môi trường. Không tái hiện được thì chưa sửa.
+2. Đọc lỗi thật kỹ.     Thông báo và stack trace đầu tiên trong dự án của bạn (bỏ qua dòng thư viện).
+3. Thu hẹp phạm vi.     Chia đôi: lỗi ở frontend hay backend? Mở tab Network: request có đi không, status gì, response gì?
+4. Đặt giả thuyết.      "Biến X đang là null ở dòng N". Viết ra, rồi đặt breakpoint đúng chỗ để KIỂM CHỨNG.
+5. Sửa một thứ một lần. Đổi nhiều thứ cùng lúc sẽ không biết cái nào có tác dụng.
+6. Viết test hoặc ghi chú.  Để lỗi này không quay lại.
+Phương pháp hỗ trợ:  git bisect (tìm commit gây lỗi), thu nhỏ ví dụ tối thiểu, hỏi "đã từng chạy được khi nào?"`],
+      ["p", "Bảng triệu chứng đến nơi kiểm tra", "Biết nhìn đúng chỗ ngay từ đầu tiết kiệm rất nhiều thời gian.",
+        `Trang trắng, không có gì           Console (lỗi đỏ) > Network (file JS 404?) > Sources (source map)
+Nút bấm không phản hồi             Console, Elements > Event Listeners, đặt breakpoint Event Listener > click
+Dữ liệu sai hoặc rỗng              Network > xem request và response thực tế > rồi mới nghi code hiển thị
+Giao diện lệch, bị đè              Elements > Computed (luật nào thắng), Layout (flex/grid), :hov
+Chỉ lỗi trên điện thoại            Device mode, chrome://inspect, kiểm tra viewport meta
+Chậm khi tải                       Network waterfall, Lighthouse, Coverage, kích thước ảnh
+Chậm khi tương tác (giật)          Performance > Long Tasks, Memory (rò rỉ), tránh render lại quá nhiều
+Lỗi CORS (đỏ trong Console)        Network > request OPTIONS (preflight) > header Access-Control-* của SERVER
+Sửa rồi mà trang không đổi         Disable cache, Ctrl+Shift+R, Application > Unregister service worker
+Chạy máy tôi, lỗi máy khác         Phiên bản Node/JDK, .env, hệ điều hành, dữ liệu mẫu, Dev Container`],
+      ["p", "Lỗi môi trường hay gặp và cách xử lý", "Những vấn đề lặp đi lặp lại. Thử các cách này trước khi nghi ngờ code.",
+        `Mã đã sửa nhưng chạy bản cũ     Disable cache + Ctrl+Shift+R; kiểm tra service worker; xác nhận dev server đang chạy đúng thư mục
+CORS                            Đây là chính sách của TRÌNH DUYỆT + SERVER; sửa ở server (Access-Control-Allow-Origin) hoặc proxy dev server. Đừng tắt bảo mật trình duyệt
+Mixed content (https gọi http)  Dùng https cho API, hoặc proxy
+Port đang bị chiếm              Windows: netstat -ano | findstr :5173     Linux/macOS: lsof -i :5173    rồi kill process
+Import báo lỗi dù file tồn tại  Sai hoa thường trên Linux, sai đường dẫn, quên đuôi .js với ES module
+VS Code báo lỗi vô lý           Ctrl+Shift+P > Reload Window; TypeScript: Restart TS Server; Java: Clean Java Language Server Workspace
+Terminal không thấy lệnh mới    Đóng và mở lại terminal để nạp lại PATH
+Format hai bên đánh nhau        Đặt một formatter mặc định cho mỗi ngôn ngữ; .editorconfig + Prettier trong repo
+Kết thúc dòng CRLF/LF lệch      files.eol: "\\n" và .gitattributes: * text=auto`],
+      ["p", "Thiết lập dự án mới (checklist)", "Làm một lần khi bắt đầu giúp cả nhóm đỡ lỗi về sau.",
+        `[ ] .gitignore (node_modules, dist, target, .env, *.log)       [ ] README: cách cài, chạy, test
+[ ] .editorconfig + Prettier + ESLint, chạy trong CI                [ ] .vscode/extensions.json và launch.json dùng chung
+[ ] .env.example (KHÔNG commit .env thật)                           [ ] Phiên bản runtime cố định: .nvmrc / .sdkmanrc / toolchain
+[ ] Script npm: dev, build, test, lint, format                      [ ] Husky + lint-staged: lint trước khi commit (tùy chọn)
+[ ] Nhánh chính được bảo vệ, commit theo quy ước (feat/fix/chore)
+
+Nên commit:   .vscode/settings.json (cấu hình dự án), launch.json, extensions.json
+KHÔNG commit: cài đặt cá nhân, token, đường dẫn máy của bạn (.vscode/*.code-workspace cá nhân)`],
+      ["p", "An toàn khi dùng DevTools và extension", "Có vài rủi ro mà người mới thường không biết.",
+        `Self-XSS    Không dán lệnh lạ vào Console theo lời người khác (kẻ lừa đảo dùng cách này để lấy token, cookie, tài khoản).
+            Chrome có cảnh báo khi dán lần đầu: hãy nghiêm túc đọc.
+Bí mật      Không dán token, mật khẩu, khóa API vào chat/issue/ảnh chụp màn hình. Network > Copy as cURL chứa Authorization header, hãy xóa trước khi gửi.
+Extension   Chỉ cài từ nguồn đáng tin; xem quyền yêu cầu. Chrome extension đọc được dữ liệu trang. Dùng profile Chrome sạch để debug.
+Workspace Trust   VS Code hỏi khi mở thư mục lạ: chọn Restricted Mode để tránh chạy task hoặc script độc hại tự động.
+Dữ liệu thật      Test với dữ liệu mẫu, không dùng dữ liệu cá nhân của khách hàng trên máy cá nhân.
+Source map        Đừng deploy source map ra production nếu không muốn lộ mã nguồn.`],
+      ["p", "Thói quen giúp làm việc nhanh hơn", "Những thay đổi nhỏ có tác dụng cộng dồn sau vài tuần.",
+        `Dùng bàn phím:      Command Palette + Quick Open trước, chuột sau. Mỗi tuần học 2 phím tắt mới và dùng ngay.
+Debugger thay log:  Mất 10 phút học breakpoint, logpoint, watch; tiết kiệm hàng giờ so với console.log rải khắp nơi.
+Đọc lỗi từ trên:    Lỗi đầu tiên thường là nguyên nhân, các lỗi sau chỉ là hệ quả.
+Network trước:      Gặp lỗi dữ liệu thì mở Network xem request/response trước khi đọc code.
+Sửa tại chỗ rồi chép: Thử CSS và DOM trong Elements, hài lòng mới chép vào code.
+Snippet cho thứ lặp lại: component mẫu, log, try/catch, bộ test mẫu.
+Một cửa sổ DevTools cố định: dock bên phải khi viết giao diện, dock dưới khi xem log.
+Lưu cấu hình:      Bật Settings Sync để đồng bộ settings, phím tắt, extension giữa các máy.
+Ghi lại cách sửa:  Mỗi lỗi khó, viết 3 dòng: triệu chứng, nguyên nhân, cách sửa. Sau vài tháng bạn có sổ tay của riêng mình.`]
+    ];
+    const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const KW = "const let function return if else await async true false null new import from export type request";
+    const re = new RegExp("(\\/\\/.*)|(\"[^\"\\n]*\"|'[^'\\n]*')|\\b(" + KW.split(" ").join("|") + ")\\b|(\\bCtrl\\+[A-Za-z+\\[\\]\\\\.;,/]*|\\bShift\\+[A-Za-z0-9+\\[\\]\\\\.;,/]*|\\bAlt\\+[A-Za-z0-9+\\[\\]\\\\.;,/]*|\\bF\\d{1,2}\\b)", "g");
+    const hl = c => esc(c).replace(re, (m, cm, s, k, key) => cm ? "<em>" + cm + "</em>" : s ? "<i>" + s + "</i>" : k ? "<b>" + k + "</b>" : "<u>" + key + "</u>");
+    const main = document.getElementById("main"), nav = document.getElementById("nav");
+    let last = "", navHtml = "";
+    S.forEach((x, i) => {
+      const [l, title, d, code, tip] = x;
+      if (l !== last) {
+        last = l;
+        main.insertAdjacentHTML("beforeend", `<div class="lvl ${l}" data-l="${l}">${LV[l][0]}<small>${LV[l][1]}</small></div>`);
+        navHtml += `<h4 class="${l}" style="color:var(--l)">${LV[l][0]}</h4>`;
+      }
+      main.insertAdjacentHTML("beforeend", `<section class="card ${l}" id="s${i}" data-l="${l}"><h3>${title}</h3><p>${d}</p><div class="cb"><button class="cp">Sao chép</button><pre><code>${hl(code)}</code></pre></div>${tip ? `<div class="tip">${tip}</div>` : ""}</section>`);
+      navHtml += `<a class="${l}" href="#s${i}">${title}</a>`;
+    });
+    nav.innerHTML = navHtml;
+    let fl = "all", q = "";
+    function apply() {
+      document.querySelectorAll("main [data-l]").forEach(e => {
+        const card = e.tagName === "SECTION";
+        const ok = (fl === "all" || e.dataset.l === fl) && (!card || !q || e.textContent.toLowerCase().includes(q));
+        e.classList.toggle("hide", !ok);
+      });
+    }
+    document.querySelectorAll(".bar button").forEach(b => b.onclick = () => {
+      fl = b.dataset.l; document.querySelectorAll(".bar button").forEach(x => x.classList.toggle("on", x === b)); apply();
+    });
+    document.getElementById("q").oninput = e => { q = e.target.value.trim().toLowerCase(); apply(); };
+    main.addEventListener("click", e => {
+      if (!e.target.classList.contains("cp")) return;
+      const t = e.target.nextElementSibling.textContent;
+      navigator.clipboard && navigator.clipboard.writeText(t).then(() => { e.target.textContent = "Đã chép"; setTimeout(() => e.target.textContent = "Sao chép", 1200); });
+    });
+  </script>
+</body>
+
+</html>

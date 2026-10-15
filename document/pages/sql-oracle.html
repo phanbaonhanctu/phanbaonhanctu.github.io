@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tóm tắt SQL và PL/SQL (Oracle): từ cơ bản đến tối ưu hiệu năng</title>
+  <style>
+    :root {
+      --bg: #f8f3f1;
+      --card: #fff;
+      --text: #1d2433;
+      --mut: #5d6679;
+      --line: #eadfda;
+      --code: #f1f5f9;
+      --c: #0b9a76;
+      --cb: #e1f6ef;
+      --m: #d97706;
+      --mb: #fdf0d9;
+      --a: #7c3aed;
+      --ab: #efe7fe;
+      --pf: #c74634;
+      --pfb: #fde8e4;
+      --k: #c026d3;
+      --s: #0b8a5f;
+      --n: #d97706;
+      --cm: #8a93a6;
+      --p: #2563eb
+    }
+
+    @media (prefers-color-scheme:dark) {
+      :root {
+        --bg: #1a1412;
+        --card: #251c19;
+        --text: #e8eef5;
+        --mut: #9aaabd;
+        --line: #42332d;
+        --code: #171110;
+        --c: #34d3a8;
+        --cb: #12332c;
+        --m: #fbbf24;
+        --mb: #3a2d10;
+        --a: #a78bfa;
+        --ab: #2a2150;
+        --pf: #fb7a65;
+        --pfb: #3d1b16;
+        --k: #f0abfc;
+        --s: #6ee7b7;
+        --n: #fbbf24;
+        --cm: #6f8096;
+        --p: #7dd3fc
+      }
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 16px/1.6 system-ui, "Segoe UI", Roboto, sans-serif
+    }
+
+    header {
+      background: linear-gradient(100deg, #c74634, #e0633f 50%, #4a3f3a);
+      color: #fff;
+      padding: 28px 20px 22px
+    }
+
+    header h1 {
+      margin: 0 0 4px;
+      font-size: clamp(24px, 4vw, 36px)
+    }
+
+    header p {
+      margin: 0;
+      opacity: .95
+    }
+
+    .bar {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: var(--card);
+      border-bottom: 1px solid var(--line);
+      padding: 10px 16px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center
+    }
+
+    .bar button,
+    .bar input {
+      font: inherit;
+      font-size: 14px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: var(--text);
+      padding: 5px 14px
+    }
+
+    .bar button {
+      cursor: pointer
+    }
+
+    .bar button.on {
+      border-color: transparent;
+      color: #fff;
+      background: #c74634
+    }
+
+    .bar button[data-l=c].on {
+      background: var(--c);
+      color: #06231b
+    }
+
+    .bar button[data-l=m].on {
+      background: var(--m);
+      color: #2b1a00
+    }
+
+    .bar button[data-l=a].on {
+      background: var(--a)
+    }
+
+    .bar button[data-l=p].on {
+      background: var(--pf);
+      color: #fff
+    }
+
+    .bar input {
+      flex: 1;
+      min-width: 140px;
+      max-width: 280px;
+      margin-left: auto
+    }
+
+    .wrap {
+      display: flex;
+      gap: 24px;
+      max-width: 1150px;
+      margin: 0 auto;
+      padding: 20px 16px
+    }
+
+    aside {
+      width: 215px;
+      flex: none;
+      position: sticky;
+      top: 64px;
+      align-self: flex-start;
+      max-height: calc(100vh - 80px);
+      overflow: auto;
+      font-size: 14px
+    }
+
+    aside h4 {
+      margin: 12px 0 4px;
+      font-size: 14px
+    }
+
+    aside a {
+      display: block;
+      padding: 3px 8px;
+      color: var(--text);
+      text-decoration: none;
+      border-radius: 6px;
+      border-left: 3px solid var(--l)
+    }
+
+    aside a:hover {
+      background: var(--card)
+    }
+
+    main {
+      flex: 1;
+      min-width: 0
+    }
+
+    .lvl {
+      margin: 26px 0 12px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 20px;
+      font-weight: 700;
+      background: var(--lb);
+      color: var(--l)
+    }
+
+    .lvl small {
+      display: block;
+      font-weight: 400;
+      font-size: 14px;
+      color: var(--mut)
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-left: 6px solid var(--l);
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin: 0 0 14px
+    }
+
+    .card h3 {
+      margin: 0 0 6px;
+      font-size: 18px;
+      color: var(--l)
+    }
+
+    .card p {
+      margin: 4px 0 8px;
+      color: var(--mut)
+    }
+
+    .tip {
+      background: var(--lb);
+      border-radius: 8px;
+      padding: 6px 10px;
+      margin: 8px 0 0;
+      font-size: 14px
+    }
+
+    code {
+      font-family: ui-monospace, Consolas, Menlo, monospace
+    }
+
+    .cb {
+      position: relative;
+      margin: 8px 0 0
+    }
+
+    pre {
+      margin: 0;
+      padding: 12px 14px;
+      background: var(--code);
+      border-radius: 8px;
+      overflow-x: auto;
+      font: 13.5px/1.55 ui-monospace, Consolas, Menlo, monospace
+    }
+
+    pre b {
+      font-weight: 400;
+      color: var(--k)
+    }
+
+    pre i {
+      font-style: normal;
+      color: var(--s)
+    }
+
+    pre u {
+      text-decoration: none;
+      color: var(--n)
+    }
+
+    pre em {
+      font-style: normal;
+      color: var(--cm)
+    }
+
+    pre s {
+      text-decoration: none;
+      color: var(--p)
+    }
+
+    .cp {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      font-size: 12px;
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: var(--mut);
+      border-radius: 6px;
+      padding: 1px 8px;
+      cursor: pointer
+    }
+
+    .p {
+      --l: var(--pf);
+      --lb: var(--pfb)
+    }
+
+    .c {
+      --l: var(--c);
+      --lb: var(--cb)
+    }
+
+    .m {
+      --l: var(--m);
+      --lb: var(--mb)
+    }
+
+    .a {
+      --l: var(--a);
+      --lb: var(--ab)
+    }
+
+    .hide {
+      display: none
+    }
+
+    @media (max-width:860px) {
+      aside {
+        display: none
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- <header><h1>SQL và PL/SQL: từ cơ bản đến tối ưu hiệu năng</h1><p>Lấy Oracle làm ví dụ: truy vấn, function, procedure, package và cách làm cho câu lệnh chạy nhanh.</p></header> -->
+  <div class="bar">
+    <button data-l="all" class="on">Mọi cấp</button><button data-l="c">Cơ bản</button><button data-l="m">Trung
+      cấp</button><button data-l="a">PL/SQL</button><button data-l="p">Hiệu năng</button>
+    <input id="q" type="search" placeholder="Tìm: join, index, procedure, bind...">
+  </div>
+  <div class="wrap">
+    <aside id="nav"></aside>
+    <main id="main"></main>
+  </div>
+  <script>
+    const LV = { c: ["Cơ bản", "Tạo bảng, thêm sửa xóa, truy vấn, hàm, group, join"], m: ["Trung cấp", "Subquery, CTE, window function, index, giao dịch"], a: ["PL/SQL: function, procedure, package", "Lập trình trong cơ sở dữ liệu Oracle"], p: ["Cải thiện hiệu năng", "Đọc execution plan, index, bind variable, bulk, thống kê"] };
+    const S = [
+      ["c", "Nhóm lệnh SQL và điểm riêng của Oracle", "DQL (<code>SELECT</code>), DML (<code>INSERT UPDATE DELETE MERGE</code>), DDL (<code>CREATE ALTER DROP TRUNCATE</code>), DCL (<code>GRANT REVOKE</code>), TCL (<code>COMMIT ROLLBACK</code>).",
+        `-- Kiểu dữ liệu hay dùng trong Oracle
+-- VARCHAR2(n), NUMBER(p,s), DATE (có cả giờ), TIMESTAMP, CLOB, BLOB
+
+SELECT SYSDATE FROM DUAL;        -- DUAL: bảng 1 dòng để gọi biểu thức
+SELECT 1 + 1 AS ket_qua FROM DUAL;`, "Điểm khác lớn nhất: Oracle coi chuỗi rỗng <code>''</code> là <code>NULL</code>. DDL (CREATE, ALTER, DROP) tự động COMMIT và không rollback được."],
+      ["c", "Tạo bảng và ràng buộc", "Ràng buộc giữ dữ liệu đúng ở tầng cơ sở dữ liệu: khóa chính, khóa ngoại, duy nhất, kiểm tra, không null.",
+        `CREATE TABLE departments (
+  dept_id   NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,   -- 12c trở lên
+  dept_name VARCHAR2(50) NOT NULL UNIQUE
+);
+CREATE TABLE employees (
+  emp_id    NUMBER PRIMARY KEY,
+  full_name VARCHAR2(100) NOT NULL,
+  salary    NUMBER(10,2) DEFAULT 0 CHECK (salary >= 0),
+  hire_date DATE DEFAULT SYSDATE,
+  dept_id   NUMBER,
+  CONSTRAINT fk_emp_dept FOREIGN KEY (dept_id) REFERENCES departments(dept_id)
+);
+ALTER TABLE employees ADD (email VARCHAR2(100));
+DROP TABLE employees PURGE;   -- PURGE: không giữ trong thùng rác`],
+      ["c", "INSERT, UPDATE, DELETE, MERGE", "Dữ liệu thay đổi chỉ có hiệu lực với người khác sau khi <code>COMMIT</code>. <code>MERGE</code> gộp thêm mới và cập nhật trong một lệnh.",
+        `INSERT INTO departments (dept_name) VALUES ('IT');
+INSERT INTO employees (emp_id, full_name, salary, dept_id) VALUES (1, 'An', 1500, 1);
+UPDATE employees SET salary = salary * 1.1 WHERE dept_id = 1;
+DELETE FROM employees WHERE emp_id = 1;
+
+MERGE INTO employees t
+USING (SELECT 2 AS emp_id, 'Bình' AS full_name FROM DUAL) s
+ON (t.emp_id = s.emp_id)
+WHEN MATCHED THEN UPDATE SET t.full_name = s.full_name
+WHEN NOT MATCHED THEN INSERT (emp_id, full_name) VALUES (s.emp_id, s.full_name);
+
+COMMIT;     -- hoặc ROLLBACK;`, "Luôn kiểm tra mệnh đề <code>WHERE</code> của UPDATE/DELETE trước khi chạy."],
+      ["c", "SELECT, lọc, sắp xếp, phân trang", "Thứ tự viết: SELECT, FROM, WHERE, GROUP BY, HAVING, ORDER BY. Thứ tự DB xử lý: FROM, WHERE, GROUP BY, HAVING, SELECT, ORDER BY.",
+        `SELECT emp_id, full_name, salary
+FROM   employees
+WHERE  salary BETWEEN 1000 AND 3000
+  AND  full_name LIKE 'N%'
+  AND  dept_id IN (1, 2)
+  AND  email IS NOT NULL            -- so sánh NULL phải dùng IS NULL
+ORDER BY salary DESC, full_name;
+
+-- Phân trang (Oracle 12c trở lên)
+SELECT * FROM employees ORDER BY emp_id
+OFFSET 20 ROWS FETCH NEXT 10 ROWS ONLY;
+-- Lấy 5 dòng đầu: FETCH FIRST 5 ROWS ONLY`, "Bản Oracle cũ (11g trở xuống) dùng <code>ROWNUM</code> bọc trong subquery. <code>ROWNUM</code> được gán trước <code>ORDER BY</code>."],
+      ["c", "Hàm dựng sẵn thường dùng", "Hàm một dòng cho chuỗi, số, ngày và xử lý NULL.",
+        `SELECT UPPER(full_name), LENGTH(full_name), SUBSTR(full_name, 1, 3),
+       TRIM(full_name), REPLACE(full_name, 'a', 'A'), full_name || ' - ' || dept_id,
+       ROUND(salary / 3, 2), MOD(10, 3), CEIL(2.1), FLOOR(2.9), TRUNC(2.987, 1),
+       NVL(email, 'chưa có'), NVL2(email, 'có', 'không'), COALESCE(email, phone, 'n/a'),
+       DECODE(dept_id, 1, 'IT', 2, 'HR', 'Khác'),
+       CASE WHEN salary >= 3000 THEN 'Cao' WHEN salary >= 1000 THEN 'TB' ELSE 'Thấp' END
+FROM employees;
+
+SELECT TO_CHAR(SYSDATE, 'DD/MM/YYYY HH24:MI'), TO_DATE('15/10/2026', 'DD/MM/YYYY'),
+       TO_NUMBER('123'), ADD_MONTHS(SYSDATE, 1), TRUNC(SYSDATE), SYSDATE - 7,
+       MONTHS_BETWEEN(SYSDATE, hire_date), LAST_DAY(SYSDATE)
+FROM employees;`],
+      ["c", "GROUP BY và hàm tổng hợp", "<code>WHERE</code> lọc dòng trước khi nhóm, <code>HAVING</code> lọc nhóm sau khi tổng hợp. Cột trong SELECT hoặc phải nằm trong GROUP BY, hoặc phải nằm trong hàm tổng hợp.",
+        `SELECT dept_id, COUNT(*) AS so_nv, AVG(salary) AS luong_tb,
+       MIN(salary), MAX(salary), SUM(salary)
+FROM   employees
+WHERE  hire_date >= DATE '2024-01-01'
+GROUP BY dept_id
+HAVING COUNT(*) >= 3
+ORDER BY so_nv DESC;
+
+SELECT dept_id, job_id, SUM(salary) FROM employees
+GROUP BY ROLLUP (dept_id, job_id);   -- thêm dòng tổng phụ và tổng cộng`, "<code>COUNT(*)</code> đếm cả dòng NULL; <code>COUNT(cot)</code> bỏ qua NULL."],
+      ["c", "JOIN", "Nối bảng theo khóa. INNER chỉ lấy dòng khớp; LEFT giữ mọi dòng bảng trái.",
+        `SELECT e.full_name, d.dept_name
+FROM   employees e
+INNER JOIN departments d ON d.dept_id = e.dept_id;
+
+SELECT d.dept_name, COUNT(e.emp_id) AS so_nv        -- phòng chưa có nhân viên vẫn hiện
+FROM   departments d
+LEFT JOIN employees e ON e.dept_id = d.dept_id
+GROUP BY d.dept_name;
+
+-- RIGHT JOIN, FULL OUTER JOIN, CROSS JOIN (tích Descartes)
+-- Tự nối bảng: nhân viên và quản lý
+SELECT e.full_name, m.full_name AS quan_ly
+FROM employees e LEFT JOIN employees m ON m.emp_id = e.manager_id;`, "Đừng dùng cú pháp cũ <code>WHERE a.id = b.id(+)</code> cho code mới; hãy dùng <code>LEFT JOIN</code>."],
+      ["m", "Subquery và EXISTS", "Subquery là truy vấn lồng trong truy vấn khác. Subquery tương quan tham chiếu cột của truy vấn ngoài.",
+        `-- Lương cao hơn trung bình
+SELECT * FROM employees WHERE salary > (SELECT AVG(salary) FROM employees);
+
+-- Phòng có ít nhất một nhân viên
+SELECT d.* FROM departments d
+WHERE EXISTS (SELECT 1 FROM employees e WHERE e.dept_id = d.dept_id);
+
+-- Phòng chưa có nhân viên
+SELECT d.* FROM departments d
+WHERE NOT EXISTS (SELECT 1 FROM employees e WHERE e.dept_id = d.dept_id);`, "<code>NOT IN</code> trả sai (không ra dòng nào) nếu subquery có NULL. Dùng <code>NOT EXISTS</code> cho an toàn."],
+      ["m", "CTE (WITH) và toán tử tập hợp", "<code>WITH</code> đặt tên cho truy vấn con để dễ đọc và dùng lại. Toán tử tập hợp ghép kết quả theo chiều dọc.",
+        `WITH tong_phong AS (
+  SELECT dept_id, SUM(salary) AS tong FROM employees GROUP BY dept_id
+)
+SELECT d.dept_name, t.tong
+FROM tong_phong t JOIN departments d ON d.dept_id = t.dept_id
+WHERE t.tong > 10000;
+
+SELECT full_name FROM employees  UNION ALL  SELECT name FROM contractors;  -- giữ trùng, nhanh hơn
+-- UNION (loại trùng), INTERSECT (giao), MINUS (hiệu, của Oracle)`],
+      ["m", "Window function", "Tính toán trên một \"cửa sổ\" dòng mà không gộp dòng như GROUP BY. Rất hay dùng để lấy top N theo nhóm.",
+        `SELECT full_name, dept_id, salary,
+       ROW_NUMBER() OVER (PARTITION BY dept_id ORDER BY salary DESC) AS rn,
+       RANK()       OVER (PARTITION BY dept_id ORDER BY salary DESC) AS rk,
+       SUM(salary)  OVER (PARTITION BY dept_id)                      AS tong_phong,
+       LAG(salary)  OVER (ORDER BY hire_date)                        AS luong_truoc
+FROM employees;
+
+-- Top 3 lương cao nhất mỗi phòng
+SELECT * FROM (
+  SELECT e.*, ROW_NUMBER() OVER (PARTITION BY dept_id ORDER BY salary DESC) rn
+  FROM employees e
+) WHERE rn <= 3;`, "<code>RANK</code> bỏ số khi đồng hạng (1,1,3), <code>DENSE_RANK</code> không bỏ (1,1,2), <code>ROW_NUMBER</code> luôn khác nhau."],
+      ["m", "View, sequence, synonym, truy vấn phân cấp", "Đối tượng hỗ trợ hay gặp trong Oracle. <code>CONNECT BY</code> duyệt dữ liệu dạng cây.",
+        `CREATE OR REPLACE VIEW v_emp_it AS SELECT * FROM employees WHERE dept_id = 1;
+CREATE SEQUENCE seq_order START WITH 1 INCREMENT BY 1 CACHE 20;
+SELECT seq_order.NEXTVAL FROM DUAL;   -- seq_order.CURRVAL: giá trị hiện tại của phiên
+CREATE MATERIALIZED VIEW mv_tong AS SELECT dept_id, SUM(salary) s FROM employees GROUP BY dept_id;
+
+-- Cây quản lý
+SELECT LEVEL, LPAD(' ', 2*(LEVEL-1)) || full_name AS ten
+FROM employees
+START WITH manager_id IS NULL
+CONNECT BY PRIOR emp_id = manager_id;
+
+SELECT dept_id, LISTAGG(full_name, ', ') WITHIN GROUP (ORDER BY full_name) AS ds
+FROM employees GROUP BY dept_id;`],
+      ["m", "Giao dịch và khóa", "Giao dịch là nhóm lệnh thành công hoặc thất bại cùng nhau. Mức cô lập mặc định của Oracle là READ COMMITTED: không đọc dữ liệu chưa commit và người đọc không chặn người ghi.",
+        `UPDATE accounts SET balance = balance - 100 WHERE id = 1;
+SAVEPOINT sau_tru;
+UPDATE accounts SET balance = balance + 100 WHERE id = 2;
+ROLLBACK TO sau_tru;     -- hoàn tác một phần
+COMMIT;
+
+-- Khóa dòng để tránh người khác sửa cùng lúc
+SELECT * FROM accounts WHERE id = 1 FOR UPDATE;           -- chờ nếu dòng đang bị khóa
+SELECT * FROM accounts WHERE id = 1 FOR UPDATE NOWAIT;   -- báo lỗi ngay
+SELECT * FROM jobs WHERE status = 'NEW' FOR UPDATE SKIP LOCKED;  -- bỏ qua dòng đang khóa`, "Giữ giao dịch càng ngắn càng tốt. Giao dịch dài giữ khóa và làm người khác phải chờ."],
+      ["a", "PL/SQL cơ bản", "PL/SQL là ngôn ngữ lập trình của Oracle, chạy ngay trong cơ sở dữ liệu. Một khối gồm DECLARE, BEGIN, EXCEPTION, END.",
+        `SET SERVEROUTPUT ON
+DECLARE
+  v_name   employees.full_name%TYPE;      -- lấy kiểu từ cột
+  v_emp    employees%ROWTYPE;             -- cả một dòng
+  c_limit  CONSTANT NUMBER := 1000;
+BEGIN
+  SELECT * INTO v_emp FROM employees WHERE emp_id = 1;   -- phải trả đúng 1 dòng
+  IF v_emp.salary > c_limit THEN
+    DBMS_OUTPUT.PUT_LINE('Cao: ' || v_emp.full_name);
+  ELSIF v_emp.salary = c_limit THEN NULL;
+  END IF;
+  FOR r IN (SELECT full_name FROM employees WHERE dept_id = 1) LOOP
+    DBMS_OUTPUT.PUT_LINE(r.full_name);
+  END LOOP;
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN DBMS_OUTPUT.PUT_LINE('Không có dòng');
+  WHEN TOO_MANY_ROWS THEN DBMS_OUTPUT.PUT_LINE('Nhiều hơn 1 dòng');
+  WHEN OTHERS THEN RAISE;      -- ném lại, không nuốt lỗi
+END;
+/`],
+      ["a", "Function", "Function <b>luôn trả về một giá trị</b> và có thể gọi ngay trong câu SELECT. Nên giữ function thuần tính toán, không sửa dữ liệu.",
+        `CREATE OR REPLACE FUNCTION calc_bonus (p_salary IN NUMBER, p_rate IN NUMBER DEFAULT 0.1)
+RETURN NUMBER
+DETERMINISTIC          -- cùng đầu vào luôn cùng kết quả, cho phép tối ưu và tạo index
+IS
+BEGIN
+  IF p_salary IS NULL THEN RETURN 0; END IF;
+  RETURN ROUND(p_salary * p_rate, 2);
+END calc_bonus;
+/
+
+SELECT full_name, calc_bonus(salary) AS bonus FROM employees;   -- dùng trong SQL
+SELECT calc_bonus(2000, 0.2) FROM DUAL;`, "Gọi function PL/SQL cho mỗi dòng của bảng lớn gây chuyển đổi giữa engine SQL và PL/SQL, làm chậm. Nếu logic đơn giản, viết thẳng biểu thức trong SQL."],
+      ["a", "Stored procedure", "Procedure thực hiện một hành động, có thể sửa dữ liệu, và trả kết quả qua tham số <code>OUT</code>. Gọi như một câu lệnh, không dùng trong SELECT.",
+        `CREATE OR REPLACE PROCEDURE raise_salary (
+  p_emp_id IN  NUMBER,
+  p_pct    IN  NUMBER,
+  p_new    OUT NUMBER            -- IN OUT: vừa vào vừa ra
+)
+IS
+BEGIN
+  UPDATE employees SET salary = salary * (1 + p_pct / 100)
+  WHERE  emp_id = p_emp_id
+  RETURNING salary INTO p_new;
+
+  IF SQL%ROWCOUNT = 0 THEN
+    RAISE_APPLICATION_ERROR(-20001, 'Không tìm thấy nhân viên ' || p_emp_id);   -- mã -20000..-20999
+  END IF;
+END raise_salary;
+/
+
+DECLARE v_new NUMBER;
+BEGIN
+  raise_salary(1, 10, v_new);
+  DBMS_OUTPUT.PUT_LINE('Lương mới: ' || v_new);
+  COMMIT;
+END;
+/
+-- SQL*Plus: EXEC raise_salary(1, 10, :v);   Java: CallableStatement "{call raise_salary(?, ?, ?)}"`, "Khác biệt nhanh: <b>function</b> trả giá trị, dùng được trong SQL; <b>procedure</b> thực hiện hành động, có OUT, gọi như câu lệnh. Quyết định COMMIT nên nằm ở tầng gọi (ứng dụng), không nên rải trong mọi procedure."],
+      ["a", "Package: gom function và procedure", "Package gồm phần khai báo (spec, công khai) và phần thân (body, ẩn chi tiết). Dễ bảo trì, và lần gọi đầu nạp cả package vào bộ nhớ.",
+        `CREATE OR REPLACE PACKAGE emp_pkg AS
+  FUNCTION  calc_bonus(p_salary NUMBER) RETURN NUMBER;
+  PROCEDURE raise_salary(p_emp_id NUMBER, p_pct NUMBER);
+END emp_pkg;
+/
+CREATE OR REPLACE PACKAGE BODY emp_pkg AS
+  g_default_rate CONSTANT NUMBER := 0.1;           -- private: ngoài không thấy
+  FUNCTION calc_bonus(p_salary NUMBER) RETURN NUMBER IS
+  BEGIN RETURN p_salary * g_default_rate; END;
+  PROCEDURE raise_salary(p_emp_id NUMBER, p_pct NUMBER) IS
+  BEGIN
+    UPDATE employees SET salary = salary * (1 + p_pct / 100) WHERE emp_id = p_emp_id;
+  END;
+END emp_pkg;
+/
+SELECT emp_pkg.calc_bonus(2000) FROM DUAL;`],
+      ["a", "Trigger", "Tự chạy khi có INSERT/UPDATE/DELETE. Dùng cho audit hoặc gán giá trị tự động, không nên chứa logic nghiệp vụ lớn vì khó theo dõi và khó tìm lỗi.",
+        `CREATE OR REPLACE TRIGGER trg_emp_audit
+BEFORE INSERT OR UPDATE ON employees
+FOR EACH ROW
+BEGIN
+  IF INSERTING THEN :NEW.created_at := SYSDATE; END IF;
+  :NEW.updated_at := SYSDATE;
+  IF UPDATING AND :NEW.salary <> :OLD.salary THEN
+    INSERT INTO salary_log (emp_id, old_sal, new_sal) VALUES (:OLD.emp_id, :OLD.salary, :NEW.salary);
+  END IF;
+END;
+/`],
+      ["a", "Cursor, BULK COLLECT và FORALL", "Lặp từng dòng rồi gọi SQL cho mỗi dòng (\"slow-by-slow\") rất chậm vì phải chuyển qua lại giữa engine PL/SQL và SQL. Bulk xử lý cả lô trong một lần.",
+        `DECLARE
+  CURSOR c IS SELECT emp_id, salary FROM employees WHERE dept_id = 1;
+  TYPE t_ids IS TABLE OF employees.emp_id%TYPE;
+  v_ids t_ids;
+BEGIN
+  OPEN c;
+  LOOP
+    FETCH c BULK COLLECT INTO v_ids LIMIT 1000;     -- đọc 1000 dòng một lần
+    EXIT WHEN v_ids.COUNT = 0;
+    FORALL i IN 1 .. v_ids.COUNT                    -- cập nhật cả lô trong một lần chuyển
+      UPDATE employees SET salary = salary * 1.05 WHERE emp_id = v_ids(i);
+  END LOOP;
+  CLOSE c;
+  COMMIT;
+END;
+/
+-- Nếu làm được trong một câu SQL thì dùng một câu: UPDATE employees SET salary = salary * 1.05 WHERE dept_id = 1;`],
+      ["p", "Quy trình tuning: đo trước, sửa sau", "Đừng đoán. Tìm câu SQL tốn nhiều thời gian nhất, xem execution plan, sửa một thứ, đo lại.",
+        `-- 1. Tìm các câu tốn nhiều thời gian nhất
+SELECT sql_id, executions, ROUND(elapsed_time/1e6, 1) AS giay, buffer_gets, sql_text
+FROM   v$sql
+ORDER BY elapsed_time DESC
+FETCH FIRST 10 ROWS ONLY;
+
+-- 2. Bật đo thời gian trong SQL*Plus / SQL Developer
+SET TIMING ON
+SET AUTOTRACE ON`, "AWR, ASH và SQL Monitor rất mạnh nhưng thuộc gói cần license riêng (Diagnostics/Tuning Pack). Kiểm tra license trước khi dùng trên môi trường thật."],
+      ["p", "Đọc execution plan", "Plan cho biết Oracle truy cập bảng thế nào. Cần để ý: TABLE ACCESS FULL, INDEX RANGE SCAN, kiểu join (NESTED LOOPS, HASH JOIN), số dòng ước lượng (Rows) so với thực tế.",
+        `EXPLAIN PLAN FOR
+SELECT * FROM employees WHERE dept_id = 10;
+SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
+
+-- Plan THỰC TẾ kèm số dòng thật (chính xác hơn EXPLAIN PLAN)
+SELECT /*+ GATHER_PLAN_STATISTICS */ * FROM employees WHERE dept_id = 10;
+SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY_CURSOR(FORMAT => 'ALLSTATS LAST'));
+-- So sánh cột E-Rows (ước lượng) và A-Rows (thực tế): lệch nhiều nghĩa là thống kê sai`, "Quét toàn bảng (FULL) không phải lúc nào cũng xấu: với bảng nhỏ hoặc truy vấn lấy phần lớn dòng, nó thường nhanh hơn dùng index."],
+      ["p", "Index đúng cách", "Index B-tree giúp tìm nhanh nhưng làm INSERT/UPDATE/DELETE chậm hơn và tốn dung lượng. Đánh index cho cột hay nằm trong WHERE, JOIN, ORDER BY, đặc biệt khóa ngoại.",
+        `CREATE INDEX idx_emp_dept ON employees (dept_id);
+-- Index nhiều cột: cột lọc bằng '=' đặt trước, thứ tự cột quan trọng
+CREATE INDEX idx_emp_dept_sal ON employees (dept_id, salary);
+-- Function-based: để WHERE UPPER(last_name) = 'AN' dùng được index
+CREATE INDEX idx_emp_upper ON employees (UPPER(last_name));
+-- Bitmap: cột ít giá trị khác nhau, bảng ít ghi (kho dữ liệu)
+CREATE BITMAP INDEX idx_emp_gender ON employees (gender);
+
+-- Index KHÔNG được dùng khi:
+-- WHERE TO_CHAR(hire_date, 'YYYY') = '2024'    (bọc hàm quanh cột)
+-- WHERE full_name LIKE '%An'                   (ký tự đại diện đứng đầu)
+-- WHERE phone = 912345678                      (phone là VARCHAR2: Oracle ép kiểu ngầm cả cột)
+-- WHERE dept_id <> 10                          (thường không hiệu quả)`],
+      ["p", "Viết SQL để index dùng được (sargable)", "Giữ cột trần ở một vế của phép so sánh, đưa phép tính sang vế còn lại.",
+        `-- Chậm: hàm bọc cột
+WHERE TRUNC(hire_date) = DATE '2026-10-15'
+-- Nhanh: khoảng giá trị
+WHERE hire_date >= DATE '2026-10-15' AND hire_date < DATE '2026-10-16'
+
+-- Chậm: SELECT * kéo cả cột lớn
+SELECT * FROM employees
+-- Nhanh: chỉ lấy cột cần (có thể dùng index covering)
+SELECT emp_id, full_name FROM employees
+
+-- Dùng UNION ALL khi không cần loại trùng (UNION phải sắp xếp để loại trùng)
+-- Dùng EXISTS thay DISTINCT + JOIN khi chỉ cần kiểm tra tồn tại
+-- Lọc sớm: đưa điều kiện vào WHERE thay vì lọc bằng HAVING
+-- Hạn chế OR trên nhiều cột khác nhau; tách thành UNION ALL nếu cần`],
+      ["p", "Bind variable và hard parse", "Mỗi câu SQL mới (khác ký tự) phải parse và lập plan lại (hard parse), tốn CPU và tranh chấp shared pool. Dùng bind variable để câu lệnh giống nhau dùng lại plan, đồng thời chống SQL injection.",
+        `-- SAI: nối chuỗi, mỗi giá trị là một câu SQL mới, và dễ bị SQL injection
+String sql = "SELECT * FROM employees WHERE emp_id = " + id;
+
+-- ĐÚNG: PreparedStatement với bind variable
+String sql = "SELECT emp_id, full_name FROM employees WHERE emp_id = ?";
+PreparedStatement ps = conn.prepareStatement(sql);
+ps.setInt(1, id);
+
+-- Ghi nhiều dòng: dùng batch, không gửi từng lệnh
+ps.addBatch(); ... ps.executeBatch();
+ps.setFetchSize(500);     -- đọc nhiều dòng mỗi lần qua mạng
+
+-- Trong PL/SQL: biến PL/SQL tự thành bind. Với SQL động dùng:
+EXECUTE IMMEDIATE 'UPDATE employees SET salary = :1 WHERE emp_id = :2' USING v_sal, v_id;`, "Tên bảng/cột không thể là bind variable. Nếu phải ghép, hãy kiểm tra danh sách cho phép (whitelist), hoặc dùng <code>DBMS_ASSERT</code>."],
+      ["p", "Thống kê và optimizer", "Optimizer chọn plan dựa vào thống kê (số dòng, số giá trị khác nhau, phân bố). Thống kê cũ hoặc thiếu là nguyên nhân hàng đầu của plan tệ.",
+        `-- Thu thập thống kê cho một bảng (kèm index)
+EXEC DBMS_STATS.GATHER_TABLE_STATS(ownname => 'HR', tabname => 'EMPLOYEES', cascade => TRUE);
+-- Cả schema
+EXEC DBMS_STATS.GATHER_SCHEMA_STATS('HR');
+
+-- Kiểm tra thống kê lần cuối
+SELECT table_name, num_rows, last_analyzed FROM user_tables;
+
+-- Hint: ép Oracle theo ý bạn. Chỉ dùng tạm thời và khi đã hiểu nguyên nhân
+SELECT /*+ INDEX(e idx_emp_dept_sal) */ * FROM employees e WHERE dept_id = 10;
+SELECT /*+ FULL(e) */ * FROM employees e;
+SELECT /*+ LEADING(d e) USE_HASH(e) */ * FROM departments d JOIN employees e ON e.dept_id = d.dept_id;`, "Hint cứng nhắc: dữ liệu thay đổi thì hint có thể trở nên sai. Thường nên sửa gốc (thống kê, index, cách viết) trước."],
+      ["p", "Xử lý dữ liệu lớn: batch, partition, hạn chế", "Ưu tiên thao tác theo tập hợp thay vì từng dòng, và chia nhỏ dữ liệu khi quá lớn.",
+        `-- Một câu thay vì vòng lặp nhiều lệnh
+INSERT /*+ APPEND */ INTO emp_archive SELECT * FROM employees WHERE hire_date < DATE '2020-01-01';
+COMMIT;   -- APPEND (direct-path): ghi nhanh nhưng khóa bảng, đọc xong phải COMMIT
+
+-- Phân vùng theo ngày: truy vấn chỉ đọc phân vùng liên quan (partition pruning)
+CREATE TABLE orders (
+  id NUMBER, order_date DATE, total NUMBER
+) PARTITION BY RANGE (order_date) INTERVAL (NUMTOYMINTERVAL(1, 'MONTH')) (
+  PARTITION p0 VALUES LESS THAN (DATE '2025-01-01')
+);
+
+-- Xóa toàn bộ nhanh: TRUNCATE nhanh hơn DELETE nhưng không rollback được
+TRUNCATE TABLE tmp_data;`, "Partitioning là tính năng cần license (Enterprise Edition + Partitioning option). Kiểm tra trước khi thiết kế."],
+      ["p", "Checklist tối ưu nhanh", "Đi từ rẻ đến đắt, đo sau mỗi bước.",
+        `-- 1. Có thật sự chậm không? Đo bằng v$sql hoặc AUTOTRACE
+-- 2. Thống kê còn mới không? DBMS_STATS
+-- 3. Plan có TABLE ACCESS FULL trên bảng lớn không? Có index phù hợp chưa?
+-- 4. Điều kiện có bị bọc hàm hoặc ép kiểu ngầm không?
+-- 5. E-Rows và A-Rows có lệch nhau lớn không?
+-- 6. Có đang lặp từng dòng (N+1 trong ORM, vòng lặp PL/SQL) không? Gộp thành tập hợp
+-- 7. Có dùng bind variable không? PreparedStatement, batch, fetch size
+-- 8. Lấy dữ liệu thừa không? SELECT *, thiếu phân trang, thiếu WHERE
+-- 9. Giao dịch có quá dài, khóa lâu không?
+-- 10. Cuối cùng mới tới hint, partition, materialized view, nâng cấp phần cứng`]
+    ];
+    const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const KW = "SELECT FROM WHERE GROUP BY HAVING ORDER JOIN INNER LEFT RIGHT FULL OUTER CROSS ON AS AND OR NOT IN IS NULL LIKE BETWEEN EXISTS INSERT INTO VALUES UPDATE SET DELETE MERGE USING WHEN MATCHED THEN CREATE ALTER DROP TABLE VIEW INDEX SEQUENCE PACKAGE BODY TRIGGER FUNCTION PROCEDURE REPLACE RETURN RETURNS DECLARE BEGIN END EXCEPTION IF ELSIF ELSE LOOP FOR CASE WHEN CONSTANT DEFAULT PRIMARY KEY FOREIGN REFERENCES UNIQUE CHECK CONSTRAINT DISTINCT UNION ALL INTERSECT MINUS OVER PARTITION WITH START CONNECT PRIOR OFFSET FETCH NEXT FIRST ROWS ONLY COMMIT ROLLBACK SAVEPOINT TRUNCATE GRANT TO OPEN CLOSE EXIT RAISE BEFORE AFTER EACH ROW ON UPDATING INSERTING OUT IMMEDIATE EXECUTE PURGE DESC ASC DATE MATERIALIZED BITMAP RANGE INTERVAL VALUES LESS THAN LOCK NOWAIT SKIP LOCKED NEW DETERMINISTIC TYPE TABLE OF BULK COLLECT FORALL CURSOR SET String PreparedStatement int";
+    const re = new RegExp("(\\/\\*[\\s\\S]*?\\*\\/|--.*)|('[^'\\n]*'|\"[^\"\\n]*\")|\\b(" + KW.split(" ").join("|") + ")\\b|\\b(\\d+\\.?\\d*)\\b", "gi");
+    const hl = c => esc(c).replace(re, (m, cm, s, k, n) => cm ? "<em>" + cm + "</em>" : s ? "<i>" + s + "</i>" : k ? "<b>" + k + "</b>" : "<u>" + n + "</u>");
+    const main = document.getElementById("main"), nav = document.getElementById("nav");
+    let last = "", navHtml = "";
+    S.forEach((x, i) => {
+      const [l, title, d, code, tip] = x;
+      if (l !== last) {
+        last = l;
+        main.insertAdjacentHTML("beforeend", `<div class="lvl ${l}" data-l="${l}">${LV[l][0]}<small>${LV[l][1]}</small></div>`);
+        navHtml += `<h4 class="${l}" style="color:var(--l)">${LV[l][0]}</h4>`;
+      }
+      main.insertAdjacentHTML("beforeend", `<section class="card ${l}" id="s${i}" data-l="${l}"><h3>${title}</h3><p>${d}</p><div class="cb"><button class="cp">Sao chép</button><pre><code>${hl(code)}</code></pre></div>${tip ? `<div class="tip">${tip}</div>` : ""}</section>`);
+      navHtml += `<a class="${l}" href="#s${i}">${title}</a>`;
+    });
+    nav.innerHTML = navHtml;
+    let fl = "all", q = "";
+    function apply() {
+      document.querySelectorAll("main [data-l]").forEach(e => {
+        const card = e.tagName === "SECTION";
+        const ok = (fl === "all" || e.dataset.l === fl) && (!card || !q || e.textContent.toLowerCase().includes(q));
+        e.classList.toggle("hide", !ok);
+      });
+    }
+    document.querySelectorAll(".bar button").forEach(b => b.onclick = () => {
+      fl = b.dataset.l; document.querySelectorAll(".bar button").forEach(x => x.classList.toggle("on", x === b)); apply();
+    });
+    document.getElementById("q").oninput = e => { q = e.target.value.trim().toLowerCase(); apply(); };
+    main.addEventListener("click", e => {
+      if (!e.target.classList.contains("cp")) return;
+      const t = e.target.nextElementSibling.textContent;
+      navigator.clipboard && navigator.clipboard.writeText(t).then(() => { e.target.textContent = "Đã chép"; setTimeout(() => e.target.textContent = "Sao chép", 1200); });
+    });
+  </script>
+</body>
+
+</html>

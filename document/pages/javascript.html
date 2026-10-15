@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tóm tắt JavaScript: từ cơ bản đến nâng cao</title>
+  <style>
+    :root {
+      --bg: #eef3fb;
+      --card: #fff;
+      --text: #1d2433;
+      --mut: #5d6679;
+      --line: #dbe3f0;
+      --code: #f4f6fb;
+      --c: #0b9a76;
+      --cb: #e1f6ef;
+      --m: #d97706;
+      --mb: #fdf0d9;
+      --a: #7c3aed;
+      --ab: #efe7fe;
+      --k: #c026d3;
+      --s: #0b8a5f;
+      --n: #d97706;
+      --cm: #8a93a6
+    }
+
+    @media (prefers-color-scheme:dark) {
+      :root {
+        --bg: #0f1420;
+        --card: #182033;
+        --text: #e8ecf5;
+        --mut: #9aa5bd;
+        --line: #2a3550;
+        --code: #0f1626;
+        --c: #34d3a8;
+        --cb: #12332c;
+        --m: #fbbf24;
+        --mb: #3a2d10;
+        --a: #a78bfa;
+        --ab: #2a2150;
+        --k: #f0abfc;
+        --s: #6ee7b7;
+        --n: #fbbf24;
+        --cm: #6f7a93
+      }
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 16px/1.6 system-ui, "Segoe UI", Roboto, sans-serif
+    }
+
+    header {
+      background: linear-gradient(100deg, #0b9a76, #2563eb 50%, #7c3aed);
+      color: #fff;
+      padding: 28px 20px 22px
+    }
+
+    header h1 {
+      margin: 0 0 4px;
+      font-size: clamp(24px, 4vw, 36px)
+    }
+
+    header p {
+      margin: 0;
+      opacity: .92
+    }
+
+    .bar {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: var(--card);
+      border-bottom: 1px solid var(--line);
+      padding: 10px 16px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center
+    }
+
+    .bar button,
+    .bar input {
+      font: inherit;
+      font-size: 14px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: var(--text);
+      padding: 6px 14px
+    }
+
+    .bar button {
+      cursor: pointer
+    }
+
+    .bar button.on {
+      color: #fff;
+      border-color: transparent
+    }
+
+    .bar button[data-f=all].on {
+      background: #2563eb
+    }
+
+    .bar button[data-f=c].on {
+      background: var(--c);
+      color: #06231b
+    }
+
+    .bar button[data-f=m].on {
+      background: var(--m);
+      color: #2b1a00
+    }
+
+    .bar button[data-f=a].on {
+      background: var(--a);
+      color: #fff
+    }
+
+    .bar input {
+      flex: 1;
+      min-width: 150px;
+      max-width: 300px;
+      margin-left: auto
+    }
+
+    .wrap {
+      display: flex;
+      gap: 24px;
+      max-width: 1150px;
+      margin: 0 auto;
+      padding: 20px 16px
+    }
+
+    aside {
+      width: 210px;
+      flex: none;
+      position: sticky;
+      top: 64px;
+      align-self: flex-start;
+      max-height: calc(100vh - 80px);
+      overflow: auto;
+      font-size: 14px
+    }
+
+    aside h4 {
+      margin: 12px 0 4px;
+      font-size: 13px
+    }
+
+    aside a {
+      display: block;
+      padding: 3px 8px;
+      color: var(--text);
+      text-decoration: none;
+      border-radius: 6px;
+      border-left: 3px solid var(--l)
+    }
+
+    aside a:hover {
+      background: var(--card)
+    }
+
+    main {
+      flex: 1;
+      min-width: 0
+    }
+
+    .lvl {
+      margin: 26px 0 12px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 20px;
+      font-weight: 700;
+      background: var(--lb);
+      color: var(--l)
+    }
+
+    .lvl small {
+      display: block;
+      font-weight: 400;
+      font-size: 14px;
+      color: var(--mut)
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-left: 6px solid var(--l);
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin: 0 0 14px
+    }
+
+    .card h3 {
+      margin: 0 0 6px;
+      font-size: 18px;
+      color: var(--l)
+    }
+
+    .card p {
+      margin: 4px 0 8px;
+      color: var(--mut)
+    }
+
+    .card ul {
+      margin: 4px 0 8px;
+      padding-left: 20px
+    }
+
+    .card li {
+      margin: 2px 0
+    }
+
+    .tip {
+      background: var(--lb);
+      border-radius: 8px;
+      padding: 6px 10px;
+      margin: 8px 0 0;
+      font-size: 14px
+    }
+
+    .cb {
+      position: relative;
+      margin: 8px 0 0
+    }
+
+    pre {
+      margin: 0;
+      padding: 12px 14px;
+      background: var(--code);
+      border-radius: 8px;
+      overflow-x: auto;
+      font: 13.5px/1.55 ui-monospace, Consolas, Menlo, monospace
+    }
+
+    pre b {
+      font-weight: 400;
+      color: var(--k)
+    }
+
+    pre i {
+      font-style: normal;
+      color: var(--s)
+    }
+
+    pre u {
+      text-decoration: none;
+      color: var(--n)
+    }
+
+    pre em {
+      font-style: normal;
+      color: var(--cm)
+    }
+
+    .cp {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      font-size: 12px;
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: var(--mut);
+      border-radius: 6px;
+      padding: 1px 8px;
+      cursor: pointer
+    }
+
+    .c {
+      --l: var(--c);
+      --lb: var(--cb)
+    }
+
+    .m {
+      --l: var(--m);
+      --lb: var(--mb)
+    }
+
+    .a {
+      --l: var(--a);
+      --lb: var(--ab)
+    }
+
+    .hide {
+      display: none
+    }
+
+    @media (max-width:860px) {
+      aside {
+        display: none
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- <header><h1>JavaScript: tóm tắt từ cơ bản đến nâng cao</h1><p>Ba cấp độ, mỗi mục có giải thích ngắn và code chạy được. Dành cho người đã biết Java.</p></header> -->
+  <div class="bar">
+    <button data-f="all" class="on">Tất cả</button><button data-f="c">Cơ bản</button><button data-f="m">Trung
+      cấp</button><button data-f="a">Nâng cao</button>
+    <input id="q" type="search" placeholder="Tìm: map, closure, async...">
+  </div>
+  <div class="wrap">
+    <aside id="nav"></aside>
+    <main id="main"></main>
+  </div>
+  <script>
+    const L = { c: ["Cơ bản", "Nền tảng để đọc và viết được JS"], m: ["Trung cấp", "Công cụ dùng hàng ngày khi làm dự án"], a: ["Nâng cao", "Cách JS thật sự hoạt động bên trong"] };
+    const S = [
+      ["c", "Biến và hằng", "Mặc định dùng <code>const</code>, cần gán lại thì dùng <code>let</code>, không dùng <code>var</code>. <code>const</code> chỉ cấm gán lại biến, vẫn sửa được nội dung object/array.",
+        `const PI = 3.14;
+let count = 0;
+count += 1;
+const user = { name: "An" };
+user.name = "Bình";   // OK
+// user = {};          // TypeError`],
+      ["c", "Kiểu dữ liệu và ép kiểu", "7 kiểu nguyên thủy: string, number, boolean, undefined, null, symbol, bigint. Còn lại là object. Falsy chỉ có 8 giá trị: <code>false 0 -0 0n \"\" null undefined NaN</code>.",
+        `typeof "a";        // "string"
+typeof null;       // "object" (lỗi lịch sử)
+Number("42");      // 42
+parseInt("10px");  // 10
+String(5);         // "5"
+Boolean("0");      // true (chuỗi không rỗng)
+"5" + 2;           // "52"
+"5" - 2;           // 3
+0.1 + 0.2;         // 0.30000000000000004`, "Luôn dùng <code>===</code> thay cho <code>==</code>. Ngoại lệ hợp lý: <code>x == null</code> kiểm tra cả null và undefined."],
+      ["c", "Toán tử", "Số học, so sánh, logic, ba ngôi, và ba toán tử hiện đại <code>?.</code> <code>??</code> <code>||=</code>.",
+        `2 ** 3;                    // 8
+10 % 3;                    // 1
+a && b;  a || b;  !a;
+age >= 18 ? "Lớn" : "Nhỏ";
+user?.address?.city;       // không lỗi nếu thiếu
+port ?? 3000;              // chỉ thay khi null/undefined
+name ||= "Khách";          // gán nếu falsy`],
+      ["c", "Điều kiện", "<code>if / else if / else</code>, <code>switch</code> (nhớ <code>break</code>), và ba ngôi cho biểu thức ngắn.",
+        `if (score >= 90) grade = "A";
+else if (score >= 50) grade = "B";
+else grade = "C";
+
+switch (day) {
+  case "sat":
+  case "sun": console.log("Cuối tuần"); break;
+  default: console.log("Ngày thường");
+}`],
+      ["c", "Vòng lặp", "<code>for</code> khi biết số lần, <code>while</code> khi chưa biết, <code>for...of</code> cho giá trị của array, <code>for...in</code> cho key của object.",
+        `for (let i = 0; i < 3; i++) console.log(i);
+for (const x of [10, 20]) console.log(x);
+for (const k in { a: 1, b: 2 }) console.log(k);
+let n = 3;
+while (n--) { if (n === 1) continue; console.log(n); }`],
+      ["c", "Function và arrow function", "Có 3 cách khai báo. Declaration được hoist, expression và arrow thì không. Arrow không có <code>this</code> riêng.",
+        `function add(a, b = 0) { return a + b; }
+const mul = function (a, b) { return a * b; };
+const sq = n => n * n;
+const mk = name => ({ name });   // trả object phải bọc ()
+add(1);   // 1
+add(1,2,3); // 3, tham số thừa bị bỏ qua, không báo lỗi`],
+      ["c", "Scope và hoisting", "<code>let/const</code> theo block, <code>var</code> theo function. <code>let/const</code> bị chặn trước dòng khai báo (TDZ), <code>var</code> được hoist với giá trị undefined.",
+        `console.log(a);  // undefined
+var a = 1;
+// console.log(b);  // ReferenceError (TDZ)
+let b = 2;
+if (true) { let x = 1; }
+// console.log(x);   // ReferenceError`],
+      ["m", "Array và các method chính", "<code>map/filter/reduce</code> không sửa mảng gốc. <code>sort</code>, <code>reverse</code>, <code>splice</code>, <code>push/pop</code> thì có.",
+        `const n = [1, 2, 3, 4, 5];
+n.map(x => x * 2);            // [2,4,6,8,10]
+n.filter(x => x % 2 === 0);   // [2,4]
+n.reduce((s, x) => s + x, 0); // 15
+n.find(x => x > 3);           // 4
+n.some(x => x > 4);  n.every(x => x > 0);
+[[1,2],[3]].flat();           // [1,2,3]
+[10, 9, 1].sort((a, b) => a - b);   // [1,9,10]`, "<code>sort()</code> mặc định so sánh theo chuỗi: <code>[10,9,1].sort()</code> cho <code>[1,10,9]</code>."],
+      ["m", "Object và destructuring", "Gộp key-value. Destructuring tách giá trị ra biến, hỗ trợ giá trị mặc định và đổi tên.",
+        `const p = { name: "An", age: 20, city: "Cần Thơ" };
+const { name, age = 18, city: place } = p;
+const [first, , third = 0] = [1, 2];
+Object.keys(p);  Object.values(p);  Object.entries(p);
+Object.fromEntries([["a", 1]]);   // { a: 1 }
+"age" in p;   delete p.city;`],
+      ["m", "Spread và rest", "Spread (<code>...</code>) rải phần tử ra, rest gom phần tử lại. Spread chỉ sao chép nông.",
+        `const a = [1, 2], b = [...a, 3];
+const o = { ...p, age: 21 };      // ghi đè age
+function sum(...nums) { return nums.reduce((s, x) => s + x, 0); }
+const [h, ...rest] = [1, 2, 3];   // rest = [2,3]
+const deep = structuredClone(p);  // sao chép sâu`],
+      ["m", "String, Number, Date, JSON", "Các method hay dùng. Tháng của <code>Date</code> bắt đầu từ 0.",
+        "const s = '  JS rocks ';\ns.trim().toUpperCase();\ns.includes('JS');  s.slice(2, 4);\n'a,b'.split(',');  'x'.padStart(3, '0');\nconst msg = `Xin chào ${s.trim()}!`;   // template literal\n(12.345).toFixed(2);   // \"12.35\"\nMath.round(4.6);  Math.max(1, 5);\nJSON.stringify({ a: 1 });  JSON.parse('{\"a\":1}');\nnew Date().toISOString();"],
+      ["m", "Map và Set", "<code>Map</code>: key là bất kỳ kiểu nào, giữ thứ tự. <code>Set</code>: tập giá trị không trùng.",
+        `const m = new Map([["a", 1]]);
+m.set("b", 2);  m.get("a");  m.has("b");  m.size;
+for (const [k, v] of m) console.log(k, v);
+const uniq = [...new Set([1, 2, 2, 3])];   // [1,2,3]`],
+      ["m", "Xử lý lỗi", "Luôn <code>throw new Error(...)</code>. <code>finally</code> luôn chạy.",
+        `try {
+  JSON.parse("{sai");
+} catch (e) {
+  console.error(e.name, e.message);   // SyntaxError ...
+} finally {
+  console.log("luôn chạy");
+}
+throw new Error("Dữ liệu không hợp lệ");`],
+      ["m", "DOM và Event", "Chọn phần tử, đổi nội dung, lắng nghe sự kiện. Event delegation: gắn một listener ở cha.",
+        `const el = document.querySelector("#list");
+el.textContent = "Xin chào";
+el.classList.toggle("active");
+el.addEventListener("click", e => {
+  const li = e.target.closest("li");
+  if (li) console.log(li.dataset.id);
+});
+localStorage.setItem("k", JSON.stringify({ a: 1 }));`, "Dùng <code>textContent</code> thay <code>innerHTML</code> khi chèn dữ liệu người dùng, để tránh XSS."],
+      ["m", "ES Modules", "Mỗi file là một module. Named export có thể nhiều, default export chỉ một.",
+        `// math.js
+export const PI = 3.14;
+export default function add(a, b) { return a + b; }
+// app.js
+import add, { PI } from "./math.js";
+// HTML: <script type="module" src="app.js"><\/script>`],
+      ["a", "Closure", "Function \"nhớ\" biến của scope nơi nó được tạo, kể cả khi scope đó đã chạy xong. Dùng để tạo biến private.",
+        `function counter() {
+  let n = 0;
+  return () => ++n;
+}
+const c = counter();
+c(); c();   // 1, 2
+// Bẫy cổ điển: var trong vòng lặp
+for (var i = 0; i < 3; i++) setTimeout(() => console.log(i));  // 3 3 3
+for (let j = 0; j < 3; j++) setTimeout(() => console.log(j));  // 0 1 2`],
+      ["a", "this, call, apply, bind", "<code>this</code> phụ thuộc cách gọi, không phải nơi khai báo. Arrow function lấy <code>this</code> từ scope bao quanh.",
+        `const u = { name: "An", hi() { return this.name; } };
+u.hi();                 // "An"
+const f = u.hi;
+// f();                 // this = undefined (strict)
+f.call({ name: "B" });  // "B"
+f.apply({ name: "C" }, []);
+const g = u.hi.bind(u); g();   // "An"`, "Cách gọi: <code>obj.method()</code> → obj; <code>fn()</code> → undefined (strict); <code>new F()</code> → instance mới."],
+      ["a", "Prototype và class", "Mọi object có <code>[[Prototype]]</code>. <code>class</code> chỉ là cú pháp đẹp hơn trên prototype.",
+        `class Animal {
+  #secret = 1;            // private thật sự
+  static count = 0;
+  constructor(name) { this.name = name; Animal.count++; }
+  speak() { return this.name + " kêu"; }
+  get upper() { return this.name.toUpperCase(); }
+}
+class Dog extends Animal {
+  constructor(n) { super(n); }          // gọi super trước khi dùng this
+  speak() { return super.speak() + " gâu"; }
+}
+Object.getPrototypeOf(new Dog("R")) === Dog.prototype;  // true`, "Khác Java: không interface, không abstract, không overload, chỉ một constructor."],
+      ["a", "Event loop", "JS đơn luồng. Call stack trống thì chạy hết microtask (Promise, await) rồi mới lấy một macrotask (setTimeout, sự kiện DOM).",
+        `console.log(1);
+setTimeout(() => console.log(2), 0);   // macrotask
+Promise.resolve().then(() => console.log(3));   // microtask
+console.log(4);
+// In ra: 1 4 3 2`],
+      ["a", "Promise và async/await", "Promise có 3 trạng thái: pending, fulfilled, rejected. <code>async/await</code> là cú pháp dễ đọc trên Promise.",
+        `const wait = ms => new Promise(r => setTimeout(r, ms));
+async function run() {
+  try {
+    await wait(100);
+    const [a, b] = await Promise.all([get("/a"), get("/b")]);  // song song
+  } catch (e) { console.error(e); }
+}
+Promise.allSettled([p1, p2]);   // không dừng khi có lỗi
+Promise.race([p1, p2]);         // lấy cái xong đầu tiên`, "<code>forEach(async ...)</code> không được chờ. Dùng <code>for...of</code> với await, hoặc <code>Promise.all(arr.map(...))</code>."],
+      ["a", "fetch API", "<code>fetch</code> không tự ném lỗi với HTTP 404/500. Phải kiểm tra <code>res.ok</code>.",
+        `async function getJSON(url, opts) {
+  const res = await fetch(url, opts);
+  if (!res.ok) throw new Error("HTTP " + res.status);
+  return res.json();
+}
+await getJSON("/api/users", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ name: "An" })
+});`],
+      ["a", "Iterator và generator", "Object nào có <code>[Symbol.iterator]</code> thì dùng được với <code>for...of</code> và spread. Generator tạo iterator bằng <code>yield</code>.",
+        `function* range(a, b) {
+  for (let i = a; i < b; i++) yield i;
+}
+[...range(0, 3)];          // [0,1,2]
+for (const x of range(0, 2)) console.log(x);`],
+      ["a", "Bẫy thường gặp", "Danh sách nhanh để tự kiểm tra.",
+        `[] === [];              // false (so sánh tham chiếu)
+[] + [];                // ""
+typeof NaN;             // "number"
+NaN === NaN;            // false → dùng Number.isNaN()
+[1, 2, 3].map(parseInt);// [1, NaN, NaN]
+0 || "x";   0 ?? "x";   // "x"  0`]
+    ];
+    const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const KW = "const let var function return if else for while do switch case default break continue new class extends super static get async await try catch finally throw typeof in of yield import export from delete this null undefined true false";
+    const re = new RegExp("(\\/\\/.*)|(\"[^\"\\n]*\"|'[^'\\n]*'|`[^`]*`)|\\b(" + KW.split(" ").join("|") + ")\\b|\\b(\\d+\\.?\\d*)\\b", "g");
+    const hl = c => esc(c).replace(re, (m, cm, s, k, n) => cm ? "<em>" + cm + "</em>" : s ? "<i>" + s + "</i>" : k ? "<b>" + k + "</b>" : "<u>" + n + "</u>");
+    const main = document.getElementById("main"), nav = document.getElementById("nav");
+    let last = "", navHtml = "";
+    S.forEach((x, i) => {
+      const [l, t, d, code, tip] = x;
+      if (l !== last) {
+        last = l;
+        main.insertAdjacentHTML("beforeend", `<div class="lvl ${l}" data-l="${l}">${L[l][0]}<small>${L[l][1]}</small></div>`);
+        navHtml += `<h4 class="${l}" style="color:var(--l)">${L[l][0]}</h4>`;
+      }
+      main.insertAdjacentHTML("beforeend", `<section class="card ${l}" id="s${i}" data-l="${l}"><h3>${t}</h3><p>${d}</p><div class="cb"><button class="cp">Sao chép</button><pre><code>${hl(code)}</code></pre></div>${tip ? `<div class="tip">${tip}</div>` : ""}</section>`);
+      navHtml += `<a class="${l}" href="#s${i}">${t}</a>`;
+    });
+    nav.innerHTML = navHtml;
+    let f = "all", q = "";
+    function apply() {
+      document.querySelectorAll("[data-l]").forEach(e => {
+        const isCard = e.tagName === "SECTION";
+        const okL = f === "all" || e.dataset.l === f;
+        const okQ = !isCard || !q || e.textContent.toLowerCase().includes(q);
+        e.classList.toggle("hide", !(okL && okQ));
+      });
+    }
+    document.querySelectorAll(".bar button").forEach(b => b.onclick = () => {
+      f = b.dataset.f; document.querySelectorAll(".bar button").forEach(x => x.classList.toggle("on", x === b)); apply();
+    });
+    document.getElementById("q").oninput = e => { q = e.target.value.trim().toLowerCase(); apply(); };
+    main.addEventListener("click", e => {
+      if (!e.target.classList.contains("cp")) return;
+      const t = e.target.nextElementSibling.textContent;
+      navigator.clipboard && navigator.clipboard.writeText(t).then(() => { e.target.textContent = "Đã chép"; setTimeout(() => e.target.textContent = "Sao chép", 1200); });
+    });
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tóm tắt Tailwind CSS v4: từ cơ bản đến nâng cao</title>
+  <style>
+    :root {
+      --bg: #eff6fb;
+      --card: #fff;
+      --text: #1d2433;
+      --mut: #5d6679;
+      --line: #d8e4ee;
+      --code: #f1f5f9;
+      --c: #0b9a76;
+      --cb: #e1f6ef;
+      --m: #0284c7;
+      --mb: #e0f2fe;
+      --a: #7c3aed;
+      --ab: #efe7fe;
+      --k: #c026d3;
+      --s: #0b8a5f;
+      --n: #d97706;
+      --cm: #8a93a6;
+      --p: #2563eb
+    }
+
+    @media (prefers-color-scheme:dark) {
+      :root {
+        --bg: #0d1620;
+        --card: #15212e;
+        --text: #e8eef5;
+        --mut: #9aaabd;
+        --line: #26384a;
+        --code: #0c141d;
+        --c: #34d3a8;
+        --cb: #12332c;
+        --m: #38bdf8;
+        --mb: #0c2c40;
+        --a: #a78bfa;
+        --ab: #2a2150;
+        --k: #f0abfc;
+        --s: #6ee7b7;
+        --n: #fbbf24;
+        --cm: #6f8096;
+        --p: #7dd3fc
+      }
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 16px/1.6 system-ui, "Segoe UI", Roboto, sans-serif
+    }
+
+    header {
+      background: linear-gradient(100deg, #06b6d4, #0ea5e9 50%, #6366f1);
+      color: #fff;
+      padding: 28px 20px 22px
+    }
+
+    header h1 {
+      margin: 0 0 4px;
+      font-size: clamp(24px, 4vw, 36px)
+    }
+
+    header p {
+      margin: 0;
+      opacity: .95
+    }
+
+    .bar {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: var(--card);
+      border-bottom: 1px solid var(--line);
+      padding: 10px 16px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center
+    }
+
+    .bar button,
+    .bar input {
+      font: inherit;
+      font-size: 14px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: var(--text);
+      padding: 5px 14px
+    }
+
+    .bar button {
+      cursor: pointer
+    }
+
+    .bar button.on {
+      border-color: transparent;
+      color: #fff;
+      background: #0ea5e9
+    }
+
+    .bar button[data-l=c].on {
+      background: var(--c);
+      color: #06231b
+    }
+
+    .bar button[data-l=m].on {
+      background: var(--m);
+      color: #04202f
+    }
+
+    .bar button[data-l=a].on {
+      background: var(--a)
+    }
+
+    .bar input {
+      flex: 1;
+      min-width: 140px;
+      max-width: 280px;
+      margin-left: auto
+    }
+
+    .wrap {
+      display: flex;
+      gap: 24px;
+      max-width: 1150px;
+      margin: 0 auto;
+      padding: 20px 16px
+    }
+
+    aside {
+      width: 215px;
+      flex: none;
+      position: sticky;
+      top: 64px;
+      align-self: flex-start;
+      max-height: calc(100vh - 80px);
+      overflow: auto;
+      font-size: 14px
+    }
+
+    aside h4 {
+      margin: 12px 0 4px;
+      font-size: 14px
+    }
+
+    aside a {
+      display: block;
+      padding: 3px 8px;
+      color: var(--text);
+      text-decoration: none;
+      border-radius: 6px;
+      border-left: 3px solid var(--l)
+    }
+
+    aside a:hover {
+      background: var(--card)
+    }
+
+    main {
+      flex: 1;
+      min-width: 0
+    }
+
+    .lvl {
+      margin: 26px 0 12px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 20px;
+      font-weight: 700;
+      background: var(--lb);
+      color: var(--l)
+    }
+
+    .lvl small {
+      display: block;
+      font-weight: 400;
+      font-size: 14px;
+      color: var(--mut)
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-left: 6px solid var(--l);
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin: 0 0 14px
+    }
+
+    .card h3 {
+      margin: 0 0 6px;
+      font-size: 18px;
+      color: var(--l)
+    }
+
+    .card p {
+      margin: 4px 0 8px;
+      color: var(--mut)
+    }
+
+    .tip {
+      background: var(--lb);
+      border-radius: 8px;
+      padding: 6px 10px;
+      margin: 8px 0 0;
+      font-size: 14px
+    }
+
+    code {
+      font-family: ui-monospace, Consolas, Menlo, monospace
+    }
+
+    .cb {
+      position: relative;
+      margin: 8px 0 0
+    }
+
+    pre {
+      margin: 0;
+      padding: 12px 14px;
+      background: var(--code);
+      border-radius: 8px;
+      overflow-x: auto;
+      font: 13.5px/1.55 ui-monospace, Consolas, Menlo, monospace
+    }
+
+    pre b {
+      font-weight: 400;
+      color: var(--k)
+    }
+
+    pre i {
+      font-style: normal;
+      color: var(--s)
+    }
+
+    pre u {
+      text-decoration: none;
+      color: var(--n)
+    }
+
+    pre em {
+      font-style: normal;
+      color: var(--cm)
+    }
+
+    pre s {
+      text-decoration: none;
+      color: var(--p)
+    }
+
+    .cp {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      font-size: 12px;
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: var(--mut);
+      border-radius: 6px;
+      padding: 1px 8px;
+      cursor: pointer
+    }
+
+    .c {
+      --l: var(--c);
+      --lb: var(--cb)
+    }
+
+    .m {
+      --l: var(--m);
+      --lb: var(--mb)
+    }
+
+    .a {
+      --l: var(--a);
+      --lb: var(--ab)
+    }
+
+    .hide {
+      display: none
+    }
+
+    @media (max-width:860px) {
+      aside {
+        display: none
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- <header><h1>Tailwind CSS v4: tóm tắt từ cơ bản đến nâng cao</h1><p>Bạn đã biết CSS thì học Tailwind rất nhanh: mỗi class là một khai báo CSS. Chuỗi class trong code mẫu được tô màu xanh lá.</p></header> -->
+  <div class="bar">
+    <button data-l="all" class="on">Mọi cấp</button><button data-l="c">Cơ bản</button><button data-l="m">Trung
+      cấp</button><button data-l="a">Nâng cao</button>
+    <input id="q" type="search" placeholder="Tìm: hover, dark, @theme, grid...">
+  </div>
+  <div class="wrap">
+    <aside id="nav"></aside>
+    <main id="main"></main>
+  </div>
+  <script>
+    const LV = { c: ["Cơ bản", "Cài đặt và các nhóm class dùng hằng ngày"], m: ["Trung cấp", "Responsive, trạng thái, dark mode, chuyển động"], a: ["Nâng cao", "Tùy biến theme, biến thể, tổ chức code, nâng cấp từ v3"] };
+    const S = [
+      ["c", "Tailwind là gì và cài đặt", "Tailwind là framework <b>utility-first</b>: bạn ghép các class nhỏ ngay trong HTML thay vì viết file CSS riêng. Nó quét code tìm tên class và chỉ sinh ra CSS thật sự dùng. Bài này theo bản v4.",
+        `# Cài đặt với Vite
+npm install tailwindcss @tailwindcss/vite
+
+// vite.config.js
+import { defineConfig } from 'vite'
+import tailwindcss from '@tailwindcss/vite'
+export default defineConfig({ plugins: [tailwindcss()] })
+
+/* src/index.css: chỉ cần một dòng */
+@import "tailwindcss";`, "Bản v4 không cần <code>tailwind.config.js</code>. Cấu hình viết ngay trong CSS bằng <code>@theme</code>."],
+      ["c", "Tư duy utility-first", "Mỗi class làm đúng một việc. Đọc class như đọc CSS rút gọn.",
+        `<button class="rounded-lg bg-sky-600 px-4 py-2 font-semibold text-white hover:bg-sky-700">
+  Lưu
+</button>
+<!-- tương đương CSS:
+  border-radius:.5rem; background:sky-600; padding:.5rem 1rem;
+  font-weight:600; color:white; (hover: nền đậm hơn) -->`],
+      ["c", "Khoảng cách và kích thước", "Thang đo cơ bản: <code>1</code> đơn vị = 0,25rem (4px). Nên <code>p-4</code> là 1rem, <code>p-8</code> là 2rem.",
+        `<div class="p-4 px-6 mt-2 mb-8 mx-auto">   <!-- padding, margin -->
+<div class="w-64 h-32 max-w-md min-h-screen"> <!-- kích thước -->
+<div class="w-1/2 w-full w-screen size-10">  <!-- phân số, 100%, vw, rộng=cao -->
+<ul class="space-y-2"> <div class="flex gap-4">  <!-- khoảng cách giữa các con -->`],
+      ["c", "Màu và chữ", "Màu có dạng <code>{thuộc-tính}-{màu}-{độ đậm}</code> từ 50 đến 950. Thêm <code>/số</code> để chỉnh độ trong suốt.",
+        `<p class="text-slate-700 bg-sky-100 border-sky-300">
+<p class="text-lg font-bold leading-relaxed tracking-wide">
+<p class="text-center uppercase underline italic">
+<div class="bg-black/50 text-white/80">     <!-- 50% và 80% opacity -->
+<p class="text-sm md:text-base">             <!-- xs sm base lg xl 2xl ... -->`],
+      ["c", "Viền, bo góc, bóng", "Các cỡ <code>xs sm md lg xl 2xl</code> dùng chung cho bo góc và bóng.",
+        `<div class="border border-slate-300 rounded-xl shadow-md ring-2 ring-sky-400">
+<img class="rounded-full size-12">
+<div class="border-b-2 divide-y divide-slate-200">
+<input class="outline-hidden focus:ring-2">`],
+      ["c", "Flexbox và Grid", "Hai công cụ bố cục chính, class gần như trùng tên với CSS.",
+        `<div class="flex items-center justify-between gap-4">   <!-- hàng -->
+<div class="flex flex-col flex-wrap">                    <!-- cột, xuống dòng -->
+<div class="flex-1 shrink-0 grow">                       <!-- phần con -->
+<div class="grid grid-cols-3 gap-6">                     <!-- lưới 3 cột -->
+<div class="col-span-2 row-span-2">
+<div class="grid place-items-center min-h-screen">       <!-- căn giữa cả màn hình -->`],
+      ["c", "Hiển thị và định vị", "Hầu hết bằng tên CSS: <code>block</code>, <code>hidden</code>, <code>relative</code>, <code>absolute</code>...",
+        `<div class="hidden block inline-block">
+<div class="relative"> <span class="absolute top-0 right-0">   <!-- tương đối / tuyệt đối -->
+<div class="fixed inset-0 z-50">                              <!-- phủ cả màn hình -->
+<header class="sticky top-0">
+<div class="overflow-hidden overflow-x-auto">`],
+      ["m", "Responsive (mobile-first)", "Class không tiền tố áp dụng cho mọi màn hình. Tiền tố như <code>md:</code> áp dụng từ độ rộng đó trở lên. Mốc mặc định: sm 40rem, md 48rem, lg 64rem, xl 80rem, 2xl 96rem.",
+        `<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<p class="text-sm md:text-base lg:text-lg">
+<nav class="hidden md:flex">   <!-- ẩn trên điện thoại, hiện từ md -->
+<div class="max-md:hidden">     <!-- chỉ áp dụng DƯỚI md -->`, "Thiết kế cho điện thoại trước, rồi thêm <code>md:</code>, <code>lg:</code> khi màn rộng ra."],
+      ["m", "Trạng thái: hover, focus, group, peer", "Thêm tiền tố trạng thái trước class. Có thể xếp chồng: <code>md:hover:bg-sky-700</code>.",
+        `<button class="bg-sky-600 hover:bg-sky-700 active:scale-95 focus-visible:ring-2
+               disabled:opacity-50 disabled:cursor-not-allowed">
+<li class="odd:bg-slate-50 first:rounded-t last:border-0">
+<div class="group">                          <!-- cha -->
+  <span class="group-hover:underline">   <!-- đổi khi hover cha -->
+</div>
+<input class="peer"> <p class="hidden peer-invalid:block">Email sai</p>`],
+      ["m", "Dark mode", "Mặc định theo thiết lập hệ điều hành. Dùng tiền tố <code>dark:</code>. Muốn bật tắt bằng nút (class <code>dark</code>) thì khai báo biến thể trong CSS.",
+        `<div class="bg-white text-slate-900 dark:bg-slate-900 dark:text-white">
+
+/* index.css: chuyển sang dùng class .dark thay vì theo hệ điều hành */
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));`],
+      ["m", "Chuyển động và biến đổi", "Dùng <code>transition</code> cùng thời lượng; ưu tiên animate <code>transform</code> và <code>opacity</code>.",
+        `<div class="transition duration-200 ease-out hover:-translate-y-1 hover:scale-105 hover:shadow-lg">
+<div class="rotate-45 translate-x-4 scale-90">
+<svg class="animate-spin"> <div class="animate-pulse bg-slate-200">  <!-- skeleton -->
+<div class="motion-reduce:animate-none">`],
+      ["m", "Chữ dài, ảnh, tỷ lệ", "Các class xử lý nội dung hay gặp trong thẻ card.",
+        `<p class="truncate">Một dòng, dư thì ... </p>
+<p class="line-clamp-3">Tối đa 3 dòng rồi cắt</p>
+<img class="aspect-video w-full object-cover">
+<div class="aspect-square"> <img class="object-contain">
+<p class="break-words whitespace-nowrap">`],
+      ["a", "Tùy biến theme bằng @theme", "Ở v4, theme là biến CSS. Khai báo biến đúng tên thì Tailwind tự sinh class tương ứng.",
+        `@import "tailwindcss";
+
+@theme {
+  --color-brand-500: #0ea5e9;      /* sinh ra bg-brand-500, text-brand-500... */
+  --font-display: "Inter", sans-serif;   /* font-display */
+  --breakpoint-3xl: 120rem;        /* 3xl:... */
+  --spacing: 0.25rem;
+  --radius-card: 1rem;             /* rounded-card */
+}
+/* Bỏ cả bảng màu mặc định: */
+@theme { --color-*: initial; --color-ink: #0f172a; }`],
+      ["a", "Giá trị tùy ý và biến thể tùy ý", "Ngoặc vuông cho phép dùng giá trị bất kỳ mà không cần khai báo trước. Dùng dấu <code>_</code> thay cho khoảng trắng.",
+        `<div class="w-[320px] bg-[#1da1f2] top-[117px] grid-cols-[1fr_2fr]">
+<div class="text-[length:var(--size)] bg-(--brand)">   <!-- dùng biến CSS -->
+<ul class="[&>li]:mt-2 [&_a]:underline">                 <!-- selector tùy ý -->
+<div class="[mask-type:luminance]">                     <!-- thuộc tính tùy ý -->
+<p class="text-red-500!">                               <!-- !important: dấu ! ở cuối -->`],
+      ["a", "@apply, @utility, @custom-variant", "Khi một cụm class lặp quá nhiều, ưu tiên tách <b>component</b> (React, partial) thay vì <code>@apply</code>. Dùng CSS tùy chỉnh khi thật sự cần.",
+        `@layer components {
+  .btn { @apply rounded-lg px-4 py-2 font-semibold; }   /* class có sẵn */
+}
+@utility content-auto {          /* utility mới: dùng được hover:, md:... */
+  content-visibility: auto;
+}
+@custom-variant theme-midnight (&:where([data-theme="midnight"], [data-theme="midnight"] *));`],
+      ["a", "Biến thể nâng cao", "Tailwind hiểu nhiều trạng thái hiện đại: container query, <code>:has</code>, thuộc tính data và aria.",
+        `<div class="@container">
+  <div class="grid grid-cols-1 @md:grid-cols-3">        <!-- theo độ rộng CHA, không theo màn hình -->
+</div>
+<label class="has-[:checked]:bg-sky-50">                 <!-- :has() -->
+<div data-state="open" class="data-[state=open]:block hidden">
+<button aria-expanded="true" class="aria-expanded:rotate-180">
+<div class="group/card"> <span class="group-hover/card:underline">   <!-- group có tên -->
+<div class="not-hover:opacity-60 supports-[backdrop-filter]:backdrop-blur">`],
+      ["a", "Tổ chức code Tailwind cho dự án lớn", "Class phải xuất hiện ĐẦY ĐỦ trong code để Tailwind quét thấy. Không ghép chuỗi.",
+        `// SAI: Tailwind không thấy "text-red-500" hay "text-green-500"
+const bad = \`text-\${color}-500\`;
+// ĐÚNG: ghi đủ tên class
+const map = { error: "text-red-500", ok: "text-green-500" };
+
+// Gộp class có điều kiện và tránh xung đột
+import { clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
+const cn = (...a) => twMerge(clsx(a));
+cn("px-2 py-1", isBig && "px-4");   // px-4 thắng px-2`, "Cài thêm plugin Prettier của Tailwind để class tự sắp xếp theo thứ tự chuẩn."],
+      ["a", "Nâng cấp từ v3 lên v4", "Các thay đổi hay gặp nhất khi đọc code cũ hoặc tài liệu cũ.",
+        `/* v3 */  @tailwind base; @tailwind components; @tailwind utilities;
+/* v4 */  @import "tailwindcss";
+
+shadow-sm   → shadow-xs      shadow    → shadow-sm
+rounded-sm  → rounded-xs     rounded   → rounded-sm
+outline-none → outline-hidden
+ring        → ring-3          (v4: ring mặc định 1px)
+bg-opacity-50 (đã bỏ) → bg-black/50
+flex-shrink-0 → shrink-0      flex-grow → grow
+tailwind.config.js → khối @theme trong CSS`],
+      ["a", "Bẫy thường gặp", "Danh sách nhanh khi class không có tác dụng.",
+        `/* 1. Ghép chuỗi class động: Tailwind không sinh ra CSS */
+/* 2. Quên import file CSS vào entry (main.jsx) */
+/* 3. File chứa class nằm ngoài vùng quét tự động: thêm */ @source "../node_modules/ui-lib";
+/* 4. Hai class xung đột (px-2 px-4): thắng theo thứ tự trong CSS, không theo thứ tự viết */
+/* 5. Dùng tên v3 trong dự án v4 (shadow, rounded, ring) cho kích thước khác */
+/* 6. Class tiền tố trạng thái cần đủ thứ tự: md:hover:... */`]
+    ];
+    const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const re = /(&lt;!--[\s\S]*?--&gt;|\/\*[\s\S]*?\*\/|\/\/.*)|("[^"\n]*"|'[^'\n]*'|`[^`\n]*`)|(&lt;\/?[a-zA-Z][\w-]*)|(@[a-z-]+)|\b(--[\w-]+)(?=\s*:)|(#[0-9a-fA-F]{3,8}\b)/g;
+    const hl = c => esc(c).replace(re, (m, cm, s, t, at, v, h) => cm ? "<em>" + cm + "</em>" : s ? "<i>" + s + "</i>" : t ? "<b>" + t + "</b>" : at ? "<b>" + at + "</b>" : v ? "<s>" + v + "</s>" : "<u>" + h + "</u>");
+    const main = document.getElementById("main"), nav = document.getElementById("nav");
+    let last = "", navHtml = "";
+    S.forEach((x, i) => {
+      const [l, title, d, code, tip] = x;
+      if (l !== last) {
+        last = l;
+        main.insertAdjacentHTML("beforeend", `<div class="lvl ${l}" data-l="${l}">${LV[l][0]}<small>${LV[l][1]}</small></div>`);
+        navHtml += `<h4 class="${l}" style="color:var(--l)">${LV[l][0]}</h4>`;
+      }
+      main.insertAdjacentHTML("beforeend", `<section class="card ${l}" id="s${i}" data-l="${l}"><h3>${title}</h3><p>${d}</p><div class="cb"><button class="cp">Sao chép</button><pre><code>${hl(code)}</code></pre></div>${tip ? `<div class="tip">${tip}</div>` : ""}</section>`);
+      navHtml += `<a class="${l}" href="#s${i}">${title}</a>`;
+    });
+    nav.innerHTML = navHtml;
+    let fl = "all", q = "";
+    function apply() {
+      document.querySelectorAll("main [data-l]").forEach(e => {
+        const card = e.tagName === "SECTION";
+        const ok = (fl === "all" || e.dataset.l === fl) && (!card || !q || e.textContent.toLowerCase().includes(q));
+        e.classList.toggle("hide", !ok);
+      });
+    }
+    document.querySelectorAll(".bar button").forEach(b => b.onclick = () => {
+      fl = b.dataset.l; document.querySelectorAll(".bar button").forEach(x => x.classList.toggle("on", x === b)); apply();
+    });
+    document.getElementById("q").oninput = e => { q = e.target.value.trim().toLowerCase(); apply(); };
+    main.addEventListener("click", e => {
+      if (!e.target.classList.contains("cp")) return;
+      const t = e.target.nextElementSibling.textContent;
+      navigator.clipboard && navigator.clipboard.writeText(t).then(() => { e.target.textContent = "Đã chép"; setTimeout(() => e.target.textContent = "Sao chép", 1200); });
+    });
+  </script>
+</body>
+
+</html>
