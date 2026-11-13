@@ -464,14 +464,14 @@ function escapeCSV(
         Excel Formula Injection
     */
 
-    if (
-        /^[=+\-@]/.test(
-            s
-        )
-    ) {
+    //if (
+     //   /^[=+\-@]/.test(
+    //        s
+    //    )
+    //) {
 
-        s = "'" + s;
-    }
+     //   s = "'" + s;
+   // }
 
     /*
         RFC4180 quote escape
