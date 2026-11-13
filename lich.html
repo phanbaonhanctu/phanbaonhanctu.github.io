@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lịch Âm Việt Nam</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 24px;
+    font-family: Arial, sans-serif;
+    background: #f5f5f5; color: #222;
+  }
+  .calendar {
+    max-width: 900px; margin: auto;
+    background: white; border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,.10);
+    overflow: hidden;
+  }
+  .header {
+    padding: 18px 20px; display: flex;
+    align-items: center; justify-content: space-between;
+    gap: 10px; border-bottom: 1px solid #eee;
+  }
+  .header button {
+    border: 0; background: #eee; border-radius: 8px;
+    width: 42px; height: 36px; cursor: pointer; font-size: 18px;
+  }
+  .header button:hover { background: #ddd; }
+  .title { text-align: center; flex: 1; }
+  .title h2 { margin: 0 0 4px; font-size: 22px; }
+  .title div { color: #777; font-size: 13px; }
+  .week {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    background: #fafafa; border-bottom: 1px solid #eee;
+  }
+  .week div {
+    text-align: center; padding: 11px 4px;
+    font-weight: bold; font-size: 13px; color: #666;
+  }
+  .days {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+  }
+  .day {
+    min-height: 95px; padding: 8px;
+    border-right: 1px solid #eee; border-bottom: 1px solid #eee;
+    cursor: pointer; position: relative;
+  }
+  .day:hover { background: #fafafa; }
+  .day.other { color: #aaa; background: #fcfcfc; }
+  .day.today { outline: 2px solid #777; outline-offset: -2px; }
+  .solar { font-size: 18px; font-weight: bold; }
+  .lunar { margin-top: 5px; font-size: 12px; color: #666; }
+  .lunar.first { font-weight: bold; color: #333; }
+  .detail {
+    padding: 16px 20px; background: #fafafa;
+    border-top: 1px solid #eee; font-size: 14px;
+  }
+  .detail b { margin-right: 6px; }
+  @media (max-width: 600px) {
+    body { padding: 8px; }
+    .day { min-height: 72px; padding: 5px; }
+    .solar { font-size: 15px; }
+    .lunar { font-size: 10px; }
+  }
+</style>
+
+<style>
+  .holiday-jp {
+    margin-top: 5px;
+    font-size: 11px;
+    line-height: 1.25;
+    color: #b42318;
+    font-weight: 600;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+  .holiday-jp .holiday-type {
+    color: #8a1c13;
+    font-size: 10px;
+    font-weight: 500;
+    display: block;
+  }
+  .day.jp-holiday {
+    background: #fff7f7;
+  }
+  .day.jp-holiday .solar {
+    color: #b42318;
+  }
+  .legend {
+    padding: 10px 20px 14px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    font-size: 12px;
+    color: #666;
+    border-top: 1px solid #eee;
+  }
+  .legend-item { display: inline-flex; align-items: center; gap: 6px; }
+  .legend-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+  .legend-dot.jp { background: #b42318; }
+  .source-note {
+    padding: 0 20px 16px;
+    font-size: 11px;
+    color: #888;
+  }
+</style>
+
+</head>
+<body>
+
+<div class="calendar">
+  <div class="header">
+    <button id="prev" title="Tháng trước">‹</button>
+    <div class="title">
+      <h2 id="monthTitle"></h2>
+      <div id="todayText"></div>
+    </div>
+    <button id="next" title="Tháng sau">›</button>
+  </div>
+
+  <div class="week">
+    <div>T2</div><div>T3</div><div>T4</div>
+    <div>T5</div><div>T6</div><div>T7</div><div>CN</div>
+  </div>
+
+  <div id="days" class="days"></div>
+  <div id="detail" class="detail">Chọn một ngày để xem thông tin.</div>
+  <div class="legend">
+    <span class="legend-item"><span class="legend-dot jp"></span> Ngày lễ / ngày nghỉ Nhật Bản</span>
+  </div>
+  <div class="source-note">Ngày lễ Nhật Bản được tính ngay trong file, không cần thư viện/CDN bên ngoài. Bao gồm 国民の祝日, 国民の休日 và 振替休日.</div>
+</div>
+
+<script>
+/*
+ * Lịch Âm Việt Nam - chạy độc lập, không cần thư viện ngoài.
+ * Thuật toán chuyển đổi Dương lịch <-> Âm lịch dựa trên thuật toán
+ * lịch âm Việt Nam của Hồ Ngọc Đức.
+ *
+ * Phạm vi thực tế của bộ dữ liệu dưới đây: khoảng 1800-2199.
+ * Múi giờ Việt Nam: UTC+7.
+ */
+
+const PI = Math.PI;
+const TIME_ZONE = 7;
+
+function INT(d) {
+  return Math.floor(d);
+}
+
+function jdFromDate(dd, mm, yy) {
+  const a = INT((14 - mm) / 12);
+  const y = yy + 4800 - a;
+  const m = mm + 12 * a - 3;
+  let jd = dd + INT((153 * m + 2) / 5) + 365 * y
+         + INT(y / 4) - INT(y / 100) + INT(y / 400) - 32045;
+  if (jd < 2299161) {
+    jd = dd + INT((153 * m + 2) / 5) + 365 * y
+       + INT(y / 4) - 32083;
+  }
+  return jd;
+}
+
+function NewMoon(k) {
+  const T = k / 1236.85;
+  const T2 = T * T;
+  const T3 = T2 * T;
+  const dr = PI / 180;
+  let Jd1 = 2415020.75933 + 29.53058868 * k
+    + 0.0001178 * T2 - 0.000000155 * T3
+    + 0.00033 * Math.sin((166.56 + 132.87 * T - 0.009173 * T2) * dr);
+
+  Jd1 += (0.00033 * Math.sin((166.56 + 132.87 * T - 0.009173 * T2) * dr));
+  const M = 359.2242 + 29.10535608 * k - 0.0000333 * T2 - 0.00000347 * T3;
+  const Mpr = 306.0253 + 385.81691806 * k + 0.0107306 * T2 + 0.00001236 * T3;
+  const F = 21.2964 + 390.67050646 * k - 0.0016528 * T2 - 0.00000239 * T3;
+  let C1 = (0.1734 - 0.000393 * T) * Math.sin(M * dr)
+         + 0.0021 * Math.sin(2 * M * dr)
+         - 0.4068 * Math.sin(Mpr * dr)
+         + 0.0161 * Math.sin(2 * Mpr * dr)
+         - 0.0004 * Math.sin(3 * Mpr * dr)
+         + 0.0104 * Math.sin(2 * F * dr)
+         - 0.0051 * Math.sin((M + Mpr) * dr)
+         - 0.0074 * Math.sin((M - Mpr) * dr)
+         + 0.0004 * Math.sin((2 * F + M) * dr)
+         - 0.0004 * Math.sin((2 * F - M) * dr)
+         - 0.0006 * Math.sin((2 * F + Mpr) * dr)
+         + 0.0010 * Math.sin((2 * F - Mpr) * dr)
+         + 0.0005 * Math.sin((2 * Mpr + M) * dr);
+
+  let deltat;
+  if (T < -11) {
+    deltat = 0.001 + 0.000839 * T + 0.0002261 * T2
+           - 0.00000845 * T3 - 0.000000081 * T2 * T2;
+  } else {
+    deltat = -0.000278 + 0.000265 * T + 0.000262 * T2;
+  }
+  const JdNew = Jd1 + C1 - deltat;
+  return JdNew;
+}
+
+function SunLongitude(jdn) {
+  const T = (jdn - 2451545.0) / 36525;
+  const T2 = T * T;
+  const dr = PI / 180;
+  const M = 357.52910 + 35999.05030 * T - 0.0001559 * T2 - 0.00000048 * T2 * T;
+  const L0 = 280.46645 + 36000.76983 * T + 0.0003032 * T2;
+  let DL = (1.914600 - 0.004817 * T - 0.000014 * T2) * Math.sin(M * dr)
+         + (0.019993 - 0.000101 * T) * Math.sin(2 * M * dr)
+         + 0.000290 * Math.sin(3 * M * dr);
+  let L = (L0 + DL) * dr;
+  L = L - PI * 2 * INT(L / (PI * 2));
+  return INT(L / PI * 6);
+}
+
+function GetNewMoonDay(k, timeZone) {
+  return INT(NewMoon(k) + 0.5 + timeZone / 24);
+}
+
+function GetSunLongitude(dayNumber, timeZone) {
+  return SunLongitude(dayNumber - 0.5 - timeZone / 24);
+}
+
+function GetLunarMonth11(yy, timeZone) {
+  const off = jdFromDate(31, 12, yy) - 2415021;
+  const k = INT(off / 29.530588853);
+  let nm = GetNewMoonDay(k, timeZone);
+  const sunLong = GetSunLongitude(nm, timeZone);
+  if (sunLong >= 9) {
+    nm = GetNewMoonDay(k - 1, timeZone);
+  }
+  return nm;
+}
+
+function GetLeapMonthOffset(a11, timeZone) {
+  const k = INT(0.5 + (a11 - 2415021.076998695) / 29.530588853);
+  let last = 0;
+  let i = 1;
+  let arc = GetSunLongitude(GetNewMoonDay(k + i, timeZone), timeZone);
+  do {
+    last = arc;
+    i++;
+    arc = GetSunLongitude(GetNewMoonDay(k + i, timeZone), timeZone);
+  } while (arc !== last && i < 15);
+  return i - 1;
+}
+
+function SolarToLunar(dd, mm, yy, timeZone = TIME_ZONE) {
+  const dayNumber = jdFromDate(dd, mm, yy);
+  const k = INT((dayNumber - 2415021.076998695) / 29.530588853);
+  let monthStart = GetNewMoonDay(k + 1, timeZone);
+  if (monthStart > dayNumber) monthStart = GetNewMoonDay(k, timeZone);
+
+  let a11 = GetLunarMonth11(yy, timeZone);
+  let b11 = a11;
+  let lunarYear;
+
+  if (a11 >= monthStart) {
+    lunarYear = yy;
+    a11 = GetLunarMonth11(yy - 1, timeZone);
+  } else {
+    lunarYear = yy + 1;
+    b11 = GetLunarMonth11(yy + 1, timeZone);
+  }
+
+  const lunarDay = dayNumber - monthStart + 1;
+  const diff = INT((monthStart - a11) / 29);
+  let lunarLeap = 0;
+  let lunarMonth = diff + 11;
+
+  if (b11 - a11 > 365) {
+    const leapMonthDiff = GetLeapMonthOffset(a11, timeZone);
+    if (diff >= leapMonthDiff) {
+      lunarMonth = diff + 10;
+      if (diff === leapMonthDiff) lunarLeap = 1;
+    }
+  }
+
+  if (lunarMonth > 12) lunarMonth -= 12;
+  if (lunarMonth >= 11 && diff < 4) lunarYear--;
+  return { day: lunarDay, month: lunarMonth, year: lunarYear, leap: lunarLeap };
+}
+
+function CanChiYear(year) {
+  const can = ["Giáp","Ất","Bính","Đinh","Mậu","Kỷ","Canh","Tân","Nhâm","Quý"];
+  const chi = ["Tý","Sửu","Dần","Mão","Thìn","Tỵ","Ngọ","Mùi","Thân","Dậu","Tuất","Hợi"];
+  return can[(year + 6) % 10] + " " + chi[(year + 8) % 12];
+}
+
+function CanChiDay(dd, mm, yy) {
+  const jd = jdFromDate(dd, mm, yy);
+  const can = ["Giáp","Ất","Bính","Đinh","Mậu","Kỷ","Canh","Tân","Nhâm","Quý"];
+  const chi = ["Tý","Sửu","Dần","Mão","Thìn","Tỵ","Ngọ","Mùi","Thân","Dậu","Tuất","Hợi"];
+  return can[(jd + 9) % 10] + " " + chi[(jd + 1) % 12];
+}
+
+function weekdayMonFirst(date) {
+  const d = date.getDay(); // 0 = Sunday
+  return d === 0 ? 6 : d - 1;
+}
+
+// =========================
+// Japanese Holiday support (self-contained)
+// Không phụ thuộc CDN/API bên ngoài.
+// =========================
+
+const JP_HOLIDAY_NAMES_VI = {
+  "元日": "Tết Dương lịch",
+  "成人の日": "Ngày Thành nhân",
+  "建国記念の日": "Ngày Kiến quốc",
+  "天皇誕生日": "Sinh nhật Thiên hoàng",
+  "春分の日": "Ngày Xuân phân",
+  "昭和の日": "Ngày Showa",
+  "憲法記念日": "Ngày Hiến pháp",
+  "みどりの日": "Ngày Xanh",
+  "こどもの日": "Ngày Thiếu nhi",
+  "海の日": "Ngày Biển",
+  "山の日": "Ngày Núi",
+  "敬老の日": "Ngày Kính lão",
+  "秋分の日": "Ngày Thu phân",
+  "スポーツの日": "Ngày Thể thao",
+  "文化の日": "Ngày Văn hóa",
+  "勤労感謝の日": "Ngày Cảm tạ Lao động",
+  "国民の休日": "Ngày nghỉ xen kẽ (Bridge Holiday)",
+  "振替休日": "Ngày nghỉ bù"
+};
+
+function holidayNameVi(name) {
+  return JP_HOLIDAY_NAMES_VI[name] || "Ngày lễ/nghỉ Nhật Bản";
+}
+
+function isoDate(year, month, day) {
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+function dateKey(date) {
+  return isoDate(date.getFullYear(), date.getMonth() + 1, date.getDate());
+}
+
+function dateOnly(year, month, day) {
+  return new Date(year, month - 1, day, 12, 0, 0, 0);
+}
+
+function makeHoliday(date, name, extra = {}) {
+  return {
+    date,
+    name,
+    type: "public",
+    substitute: false,
+    ...extra
+  };
+}
+
+function nthWeekdayOfMonth(year, month, weekday, nth) {
+  const first = new Date(year, month - 1, 1, 12);
+  const offset = (weekday - first.getDay() + 7) % 7;
+  return 1 + offset + (nth - 1) * 7;
+}
+
+// Astronomical equinox approximation used by Japanese calendar calculations.
+// Accurate for modern dates in the range needed here (1980-2099).
+function vernalEquinoxDay(year) {
+  return Math.floor(20.8431 + 0.242194 * (year - 1980) - Math.floor((year - 1980) / 4));
+}
+
+function autumnalEquinoxDay(year) {
+  return Math.floor(23.2488 + 0.242194 * (year - 1980) - Math.floor((year - 1980) / 4));
+}
+
+function addHoliday(list, year, month, day, name, extra = {}) {
+  const date = isoDate(year, month, day);
+  list.push(makeHoliday(date, name, extra));
+}
+
+function getJapanesePublicHolidays(year) {
+  const list = [];
+  if (year < 1980 || year > 2099) return list;
+
+  addHoliday(list, year, 1, 1, "元日");
+  addHoliday(list, year, 1, nthWeekdayOfMonth(year, 1, 1, 2), "成人の日");
+  addHoliday(list, year, 2, 11, "建国記念の日");
+  addHoliday(list, year, 2, 23, "天皇誕生日");
+
+  addHoliday(list, year, 3, vernalEquinoxDay(year), "春分の日");
+  addHoliday(list, year, 4, 29, "昭和の日");
+  addHoliday(list, year, 5, 3, "憲法記念日");
+  addHoliday(list, year, 5, 4, "みどりの日");
+  addHoliday(list, year, 5, 5, "こどもの日");
+
+  // Marine Day: 3rd Monday of July (2020/2021 were special Olympic exceptions).
+  let marineDay = nthWeekdayOfMonth(year, 7, 1, 3);
+  if (year === 2020) marineDay = 7;  // 海の日 2020/7/23
+  if (year === 2021) marineDay = 22; // 海の日 2021/7/22
+  addHoliday(list, year, 7, marineDay, "海の日");
+
+  // Mountain Day: 8/11; special Olympic shifts in 2020/2021.
+  let mountainDay = 11;
+  if (year === 2020) mountainDay = 10;
+  if (year === 2021) mountainDay = 8;
+  if (year >= 2016) addHoliday(list, year, 8, mountainDay, "山の日");
+
+  addHoliday(list, year, 9, nthWeekdayOfMonth(year, 9, 1, 3), "敬老の日");
+  addHoliday(list, year, 9, autumnalEquinoxDay(year), "秋分の日");
+  addHoliday(list, year, 10, nthWeekdayOfMonth(year, 10, 1, 2), "スポーツの日");
+  addHoliday(list, year, 11, 3, "文化の日");
+  addHoliday(list, year, 11, 23, "勤労感謝の日");
+
+  // One-off imperial transition / ceremony holidays.
+  const oneOff = {
+    "2019-04-30": "国民の休日",
+    "2019-05-01": "即位の日",
+    "2019-05-02": "国民の休日",
+    "2019-10-22": "即位礼正殿の儀",
+    "2020-07-23": "海の日",
+    "2020-07-24": "スポーツの日",
+    "2020-08-10": "山の日",
+    "2021-07-22": "海の日",
+    "2021-07-23": "スポーツの日",
+    "2021-08-8": "山の日"
+  };
+  Object.entries(oneOff).forEach(([date, name]) => {
+    if (date.startsWith(String(year) + "-")) {
+      const parts = date.split("-").map(Number);
+      const normalized = isoDate(parts[0], parts[1], parts[2]);
+      if (!list.some(h => h.date === normalized)) list.push(makeHoliday(normalized, name));
+    }
+  });
+
+  // Remove the ordinary Sports Day rule for 2019; it was not on 10/14.
+  if (year === 2019) {
+    const i = list.findIndex(h => h.name === "スポーツの日");
+    if (i >= 0) list.splice(i, 1);
+  }
+  if (year === 2019) {
+    const i = list.findIndex(h => h.name === "天皇誕生日");
+    if (i >= 0) list.splice(i, 1);
+  }
+
+  list.sort((a, b) => a.date.localeCompare(b.date));
+  return list;
+}
+
+function getJapaneseHoliday(d, m, y) {
+  const iso = isoDate(y, m, d);
+  const holidays = getJapanesePublicHolidays(y);
+  let found = holidays.find(h => h.date === iso);
+  if (found) return found;
+
+  // 国民の休日: a weekday between two 国民の祝日.
+  const current = dateOnly(y, m, d);
+  if (current.getDay() !== 0 && current.getDay() !== 6) {
+    const prev = dateOnly(y, m, d - 1);
+    const next = dateOnly(y, m, d + 1);
+    const prevIso = dateKey(prev);
+    const nextIso = dateKey(next);
+    const prevHoliday = holidays.find(h => h.date === prevIso);
+    const nextHoliday = holidays.find(h => h.date === nextIso);
+    if (prevHoliday && nextHoliday) {
+      return makeHoliday(iso, "国民の休日", { bridge: true });
+    }
+  }
+
+  // 振替休日: when a public holiday falls on Sunday, the next non-holiday weekday is off.
+  for (const h of holidays) {
+    const [hy, hm, hd] = h.date.split("-").map(Number);
+    if (new Date(hy, hm - 1, hd, 12).getDay() !== 0) continue;
+    let candidate = new Date(hy, hm - 1, hd + 1, 12);
+    while (candidate.getDay() === 0 || candidate.getDay() === 6 || holidays.some(x => x.date === dateKey(candidate))) {
+      candidate.setDate(candidate.getDate() + 1);
+    }
+    if (dateKey(candidate) === iso) {
+      return makeHoliday(iso, "振替休日", { substitute: true });
+    }
+  }
+
+  return null;
+}
+
+let viewDate = new Date();
+viewDate.setHours(12, 0, 0, 0);
+
+function render() {
+  const year = viewDate.getFullYear();
+  const month = viewDate.getMonth();
+
+  document.getElementById("monthTitle").textContent =
+    `Tháng ${month + 1} / ${year}`;
+
+  const now = new Date();
+  const lunarToday = SolarToLunar(now.getDate(), now.getMonth() + 1, now.getFullYear());
+  document.getElementById("todayText").textContent =
+    `Hôm nay: ${now.getDate()}/${now.getMonth()+1}/${now.getFullYear()} · ` +
+    `${lunarToday.day}/${lunarToday.month}/${lunarToday.year}`;
+
+  const first = new Date(year, month, 1);
+  const firstOffset = weekdayMonFirst(first);
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const prevDays = new Date(year, month, 0).getDate();
+
+  const container = document.getElementById("days");
+  container.innerHTML = "";
+
+  // 42 ô để lịch luôn ổn định chiều cao
+  for (let i = 0; i < 42; i++) {
+    let cellDay = i - firstOffset + 1;
+    let cellYear = year;
+    let cellMonth = month + 1;
+    let other = false;
+
+    if (cellDay <= 0) {
+      cellDay = prevDays + cellDay;
+      cellMonth = month;
+      if (cellMonth === 0) { cellMonth = 12; cellYear--; }
+      other = true;
+    } else if (cellDay > daysInMonth) {
+      cellDay -= daysInMonth;
+      cellMonth = month + 2;
+      if (cellMonth === 13) { cellMonth = 1; cellYear++; }
+      other = true;
+    }
+
+    const lunar = SolarToLunar(cellDay, cellMonth, cellYear);
+    const jpHoliday = getJapaneseHoliday(cellDay, cellMonth, cellYear);
+    const el = document.createElement("div");
+    el.className = "day" + (other ? " other" : "") + (jpHoliday ? " jp-holiday" : "");
+
+    const today = new Date();
+    if (!other &&
+        cellDay === today.getDate() &&
+        cellMonth === today.getMonth()+1 &&
+        cellYear === today.getFullYear()) {
+      el.classList.add("today");
+    }
+
+    el.innerHTML = `
+      <div class="solar">${cellDay}</div>
+      <div class="lunar ${lunar.day === 1 ? "first" : ""}">
+        ${lunar.day}${lunar.day === 1 ? "/" + lunar.month : ""}
+        ${lunar.leap ? " (N)" : ""}
+      </div>
+      ${jpHoliday ? `
+        <div class="holiday-jp" title="${jpHoliday.name}">
+          🇯🇵 ${jpHoliday.name}
+          ${jpHoliday.substitute ? `<span class="holiday-type">振替休日 · ${holidayNameVi("振替休日")}</span>` : `<span class="holiday-type">${holidayNameVi(jpHoliday.name)}</span>`}
+        </div>` : ""}
+    `;
+
+    el.onclick = () => showDetail(cellDay, cellMonth, cellYear, lunar, jpHoliday);
+    container.appendChild(el);
+  }
+}
+
+function showDetail(d, m, y, lunar, jpHoliday = null) {
+  const dayName = CanChiDay(d, m, y);
+  const yearName = CanChiYear(lunar.year);
+  const jpHtml = jpHoliday
+    ? ` · 🇯🇵 Nhật Bản: <b>${jpHoliday.name}</b> — ${holidayNameVi(jpHoliday.name)}${jpHoliday.substitute ? " (ngày nghỉ bù)" : ""}`
+    : " · 🇯🇵 Nhật Bản: Không có ngày lễ";
+
+  document.getElementById("detail").innerHTML = `
+    <b>${d.toString().padStart(2,"0")}/${m.toString().padStart(2,"0")}/${y}</b>
+    → Âm lịch: <b>${lunar.day}/${lunar.month}/${lunar.year}${lunar.leap ? " (tháng nhuận)" : ""}</b>
+    · Ngày ${dayName} · Năm ${yearName}${jpHtml}
+  `;
+}
+
+document.getElementById("prev").onclick = () => {
+  viewDate.setMonth(viewDate.getMonth() - 1);
+  render();
+};
+
+document.getElementById("next").onclick = () => {
+  viewDate.setMonth(viewDate.getMonth() + 1);
+  render();
+};
+
+render();
+</script>
+</body>
+</html>
