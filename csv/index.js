@@ -1,697 +1,595 @@
-const fileInput =
-    document.getElementById(
-        "fileInput"
-    );
+const $ = (id) => document.getElementById(id);
 
-const encodingSelect =
-    document.getElementById(
-        "encodingSelect"
-    );
+const fileInput = $("fileInput");
+const inputEncoding = $("inputEncoding");
+const outputEncoding = $("outputEncoding");
+const searchInput = $("searchInput");
+const downloadBtn = $("downloadBtn");
+const clearBtn = $("clearBtn");
+const warningDiv = $("warning");
+const stats = $("stats");
+const tableContainer = $("tableContainer");
+const editToolbar = $("editToolbar");
 
-const tableContainer =
-    document.getElementById(
-        "tableContainer"
-    );
-
-const downloadBtn =
-    document.getElementById(
-        "downloadBtn"
-    );
-
-const clearBtn =
-    document.getElementById(
-        "clearBtn"
-    );
-
-const warningDiv =
-    document.getElementById(
-        "warning"
-    );
-
-const searchInput =
-    document.getElementById(
-        "searchInput"
-    );
-
-const stats =
-    document.getElementById(
-        "stats"
-    );
+const DELIMITER = ",";
 
 let currentData = [];
+let fileBuffer = null;      // bytes gốc của file (để đọc lại khi đổi encoding)
+let fileName = "";
+let selected = null;        // { r, c } ô đang chọn (index thật trong currentData)
+let dirty = false;          // đã chỉnh sửa chưa
+let undoStack = [];
+let parseWarning = "";
+let eol = "\r\n";           // giữ nguyên kiểu xuống dòng của file gốc
+let endsWithNewline = true; // giữ nguyên việc có/không có xuống dòng cuối file
+let lastInputValue = "AUTO";
+let loadedEncoding = "";
 
-fileInput.addEventListener(
-    "change",
-    handleFile
-);
+/* ------------------------------------------------------------------ */
+/* Events                                                             */
+/* ------------------------------------------------------------------ */
 
-downloadBtn.addEventListener(
-    "click",
-    downloadCSV
-);
+fileInput.addEventListener("change", handleFile);
+downloadBtn.addEventListener("click", downloadCSV);
+clearBtn.addEventListener("click", clearData);
 
-clearBtn.addEventListener(
-    "click",
-    clearData
-);
+let searchTimer;
+searchInput.addEventListener("input", () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(renderTable, 200);
+});
 
-searchInput.addEventListener(
-    "input",
-    renderTable
-);
+inputEncoding.addEventListener("change", () => {
+    if (!fileBuffer) {
+        lastInputValue = inputEncoding.value;
+        return;
+    }
+    if (dirty && !confirm("Đổi encoding sẽ đọc lại file gốc và mất các chỉnh sửa hiện tại. Tiếp tục?")) {
+        inputEncoding.value = lastInputValue;
+        return;
+    }
+    lastInputValue = inputEncoding.value;
+    if (inputEncoding.value !== "AUTO") {
+        outputEncoding.value = inputEncoding.value;
+    }
+    loadBuffer();
+});
+
+/* Sửa ô: dùng event delegation thay vì gắn listener cho từng ô */
+tableContainer.addEventListener("input", (e) => {
+    const el = e.target.closest("[data-r]");
+    if (!el) return;
+    currentData[+el.dataset.r][+el.dataset.c] = el.textContent;
+    dirty = true;
+});
+
+tableContainer.addEventListener("focusin", (e) => {
+    const el = e.target.closest("[data-r]");
+    if (el) setSelected(el);
+});
+
+/* Paste luôn là text thuần, tránh chèn HTML vào ô */
+tableContainer.addEventListener("paste", (e) => {
+    if (!e.target.closest("[data-r]")) return;
+    e.preventDefault();
+    const text = (e.clipboardData || window.clipboardData).getData("text");
+    document.execCommand("insertText", false, text);
+});
+
+editToolbar.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-action]");
+    if (!btn || btn.disabled) return;
+    actions[btn.dataset.action]();
+});
+
+window.addEventListener("beforeunload", (e) => {
+    if (dirty) {
+        e.preventDefault();
+        e.returnValue = "";
+    }
+});
+
+/* ------------------------------------------------------------------ */
+/* Load file                                                          */
+/* ------------------------------------------------------------------ */
 
 function handleFile(e) {
-
-    const file =
-        e.target.files[0];
-
+    const file = e.target.files[0];
     if (!file) return;
 
-    const reader =
-        new FileReader();
-
+    const reader = new FileReader();
     reader.onload = (x) => {
-
-        const bytes =
-
-            new Uint8Array(
-                x.target.result
-            );
-
-        const mode =
-            encodingSelect.value;
-
-        let encoding;
-
-        switch (mode) {
-
-            case 'SJIS':
-
-                encoding = 'SJIS';
-                break;
-
-            case 'EUCJP':
-
-                encoding = 'EUCJP';
-                break;
-
-            default:
-
-                encoding = 'UTF8';
+        fileBuffer = new Uint8Array(x.target.result);
+        fileName = file.name;
+        lastInputValue = inputEncoding.value;
+        if (inputEncoding.value !== "AUTO") {
+            outputEncoding.value = inputEncoding.value;
         }
-
-        const text =
-
-            Encoding.codeToString(
-
-                Encoding.convert(
-
-                    bytes,
-
-                    {
-                        to: 'UNICODE',
-
-                        from: encoding
-                    }
-                )
-            );
-
-        currentData =
-            parseCSV(text);
-
-        validate();
-
-        renderTable();
-
-        downloadBtn.disabled = false;
-
-        clearBtn.disabled = false;
+        loadBuffer();
     };
-
-    reader.readAsArrayBuffer(
-        file
-    );
+    reader.readAsArrayBuffer(file);
 }
 
-function validate() {
-
-    const colCount =
-        currentData[0]?.length || 0;
-
-    let bad = [];
-
-    currentData.forEach(
-        (row, i) => {
-
-            if (
-                row.length !== colCount
-            ) {
-
-                bad.push(i + 1);
-            }
-        }
-    );
-
-    warningDiv.innerText =
-
-        bad.length
-
-            ? `⚠ Column mismatch rows: ${bad.join(', ')}`
-
-            : '';
-
-    stats.innerText =
-        `Rows: ${currentData.length} | Columns: ${colCount}`;
+function detectEncoding(bytes) {
+    if (bytes[0] === 0xEF && bytes[1] === 0xBB && bytes[2] === 0xBF) {
+        return "UTF8_BOM";
+    }
+    const d = Encoding.detect(bytes);
+    if (d === "SJIS") return "SJIS";
+    if (d === "EUCJP") return "EUCJP";
+    return "UTF8"; // ASCII / UTF8 / không xác định
 }
 
-function parseCSV(
-    text,
-    delimiter = ','
-) {
+function loadBuffer() {
+    let enc = inputEncoding.value;
 
-    if (!text)
-        return [];
+    if (enc === "AUTO") {
+        enc = detectEncoding(fileBuffer);
+        outputEncoding.value = enc; // mặc định tải về cùng encoding với file gốc
+    }
 
-    /*
-        remove BOM
-    */
+    loadedEncoding = enc;
 
-    if (
-        text.charCodeAt(0)
-        === 0xFEFF
-    ) {
+    const from = enc === "UTF8_BOM" ? "UTF8" : enc;
 
-        text =
-            text.slice(1);
+    const text = Encoding.codeToString(
+        Encoding.convert(fileBuffer, { to: "UNICODE", from })
+    );
+
+    // giữ nguyên kiểu xuống dòng + dòng trống cuối file của file gốc
+    const m = text.match(/\r\n|\n|\r/);
+    eol = m ? m[0] : "\r\n";
+    endsWithNewline = /[\r\n]$/.test(text);
+
+    currentData = parseCSV(text, DELIMITER);
+    selected = null;
+    undoStack = [];
+    dirty = false;
+
+    refresh();
+}
+
+/* ------------------------------------------------------------------ */
+/* Parse / build CSV                                                  */
+/* ------------------------------------------------------------------ */
+
+function parseCSV(text, delimiter = ",") {
+    parseWarning = "";
+
+    if (!text) return [];
+
+    // bỏ BOM
+    if (text.charCodeAt(0) === 0xFEFF) {
+        text = text.slice(1);
     }
 
     const rows = [];
-
     let row = [];
-    let cell = '';
-
+    let cell = "";
     let inQuote = false;
+    let atFieldStart = true; // dấu " chỉ mở quote khi nằm ở đầu ô
+    let hasContent = false;  // dòng hiện tại có gì chưa (để không tạo dòng thừa cuối file)
 
-    for (
-        let i = 0;
-        i < text.length;
-        i++
-    ) {
+    const endRow = () => {
+        row.push(cell);
+        rows.push(row);
+        row = [];
+        cell = "";
+        atFieldStart = true;
+        hasContent = false;
+    };
 
+    for (let i = 0; i < text.length; i++) {
         const c = text[i];
 
-        const next =
-            text[i + 1];
-
-        /*
-            inside quoted field
-        */
-
         if (inQuote) {
-
-            if (
-                c === '"' &&
-                next === '"'
-            ) {
-
-                cell += '"';
-
-                i++;
-
-                continue;
-            }
-
             if (c === '"') {
-
-                inQuote = false;
-
-                continue;
+                if (text[i + 1] === '"') {
+                    cell += '"';
+                    i++;
+                } else {
+                    inQuote = false;
+                }
+            } else {
+                cell += c;
             }
-
-            cell += c;
-
             continue;
         }
 
-        /*
-            opening quote
-        */
-
-        if (c === '"') {
-
+        if (c === '"' && atFieldStart) {
             inQuote = true;
-
+            atFieldStart = false;
+            hasContent = true;
             continue;
         }
 
-        /*
-            delimiter
-        */
-
-        if (
-            c === delimiter
-        ) {
-
+        if (c === delimiter) {
             row.push(cell);
-
-            cell = '';
-
+            cell = "";
+            atFieldStart = true;
+            hasContent = true;
             continue;
         }
 
-        /*
-            CRLF
-        */
-
-        if (
-            c === '\r' &&
-            next === '\n'
-        ) {
-
-            row.push(cell);
-
-            rows.push(row);
-
-            row = [];
-            cell = '';
-
-            i++;
-
+        if (c === "\r") {
+            if (text[i + 1] === "\n") i++;
+            endRow();
             continue;
         }
 
-        /*
-            LF only
-        */
-
-        if (c === '\n') {
-
-            row.push(cell);
-
-            rows.push(row);
-
-            row = [];
-            cell = '';
-
-            continue;
-        }
-
-        /*
-            standalone CR
-        */
-
-        if (c === '\r') {
-
-            row.push(cell);
-
-            rows.push(row);
-
-            row = [];
-            cell = '';
-
+        if (c === "\n") {
+            endRow();
             continue;
         }
 
         cell += c;
+        atFieldStart = false;
+        hasContent = true;
     }
-
-    /*
-        unfinished quote detection
-    */
 
     if (inQuote) {
-
-        console.warn(
-            'CSV Warning: unclosed quote'
-        );
+        parseWarning = "⚠ File có dấu \" chưa được đóng, dữ liệu cuối file có thể bị gộp vào một ô.";
     }
 
-    row.push(cell);
+    if (hasContent) endRow();
 
-    rows.push(row);
+    return rows;
+}
 
-    return rows.filter(
+function escapeCSV(cell, delimiter = ",") {
+    if (cell === null || cell === undefined) return "";
 
-        row =>
+    let s = String(cell);
 
-            !(
-                row.length === 1
-                &&
-                row[0] === ''
-            )
+    // RFC4180: nhân đôi dấu "
+    s = s.replace(/"/g, '""');
 
-    );
+    const needQuote =
+        s.includes(delimiter) ||
+        s.includes('"') ||
+        s.includes("\n") ||
+        s.includes("\r") ||
+        /^\s|\s$/.test(s);
+
+    return needQuote ? `"${s}"` : s;
+}
+
+function toCSV() {
+    const body = currentData
+        .map((row) => {
+            // dòng chỉ có 1 ô rỗng phải ghi là "" kẻo thành dòng trống
+            if (row.length === 1 && row[0] === "") return '""';
+            return row.map((cell) => escapeCSV(cell, DELIMITER)).join(DELIMITER);
+        })
+        .join(eol);
+
+    return endsWithNewline ? body + eol : body;
+}
+
+/* ------------------------------------------------------------------ */
+/* Render                                                             */
+/* ------------------------------------------------------------------ */
+
+function refresh() {
+    validate();
+    renderTable();
+    updateControls();
+}
+
+function validate() {
+    const colCount = currentData[0]?.length || 0;
+    const bad = [];
+
+    currentData.forEach((row, i) => {
+        if (row.length !== colCount) bad.push(i + 1);
+    });
+
+    const msgs = [];
+    if (bad.length) msgs.push(`⚠ Số cột khác dòng tiêu đề tại dòng: ${bad.join(", ")}`);
+    if (parseWarning) msgs.push(parseWarning);
+    warningDiv.innerText = msgs.join("\n");
+
+    stats.innerText =
+        `Rows: ${currentData.length} | Columns: ${colCount}` +
+        (loadedEncoding ? ` | Encoding file gốc: ${loadedEncoding}` : "");
 }
 
 function renderTable() {
+    const keyword = searchInput.value.toLowerCase();
+    const colCount = currentData[0]?.length || 0;
+    const table = document.createElement("table");
 
-    let data = [...currentData];
-
-    const keyword =
-        searchInput.value
-            .toLowerCase();
-
-    if (keyword) {
-
-        data =
-            data.filter(
-                row =>
-
-                    row.some(
-                        c =>
-
-                            String(c)
-
-                                .toLowerCase()
-
-                                .includes(keyword)
-                    )
-            );
-    }
-
-    const table =
-        document.createElement(
-            "table"
-        );
-
-    data.forEach(
-        (row, i) => {
-
-            const tr =
-                document.createElement(
-                    "tr"
-                );
-
-            row.forEach(
-                (cell, j) => {
-
-                    const el =
-
-                        i === 0
-
-                            ? document.createElement(
-                                "th"
-                            )
-
-                            : document.createElement(
-                                "td"
-                            );
-
-                    el.textContent =
-                        cell;
-
-                    el.contentEditable = true;
-
-                    el.addEventListener(
-                        "input",
-                        () => {
-
-                            currentData[i][j] =
-                                el.textContent;
-                        }
-                    );
-
-                    tr.appendChild(
-                        el
-                    );
-                }
-            );
-
-            table.appendChild(
-                tr
-            );
+    currentData.forEach((row, r) => {
+        // luôn hiện dòng tiêu đề; chỉ lọc các dòng dữ liệu
+        if (r > 0 && keyword) {
+            const match = row.some((c) => String(c).toLowerCase().includes(keyword));
+            if (!match) return;
         }
-    );
 
-    tableContainer.innerHTML = '';
+        const tr = document.createElement("tr");
+        if (row.length !== colCount) tr.classList.add("bad-row");
 
-    tableContainer.appendChild(
-        table
-    );
+        const num = document.createElement("th");
+        num.className = "rownum";
+        num.textContent = r + 1;
+        tr.appendChild(num);
+
+        row.forEach((cell, c) => {
+            const el = document.createElement(r === 0 ? "th" : "td");
+            el.textContent = cell;
+            el.contentEditable = "plaintext-only";
+            if (el.contentEditable !== "plaintext-only") el.contentEditable = "true";
+            el.dataset.r = r;
+            el.dataset.c = c;
+            if (selected && selected.r === r && selected.c === c) {
+                el.classList.add("selected");
+            }
+            tr.appendChild(el);
+        });
+
+        table.appendChild(tr);
+    });
+
+    tableContainer.innerHTML = "";
+    tableContainer.appendChild(table);
 }
 
-function escapeCSV(
-    cell,
-    delimiter = ','
-) {
+function setSelected(el) {
+    const prev = tableContainer.querySelector(".selected");
+    if (prev) prev.classList.remove("selected");
+    el.classList.add("selected");
+    selected = { r: +el.dataset.r, c: +el.dataset.c };
+}
 
-    if (
-        cell === null ||
-        cell === undefined
-    ) {
+function updateControls() {
+    const has = currentData.length > 0;
+    downloadBtn.disabled = !has;
+    clearBtn.disabled = !has;
 
-        return '';
+    editToolbar.querySelectorAll("[data-action]").forEach((btn) => {
+        btn.disabled = btn.dataset.action === "undo" ? !undoStack.length : !has;
+    });
+}
+
+function focusSelected() {
+    if (!selected) return;
+    const el = tableContainer.querySelector(
+        `[data-r="${selected.r}"][data-c="${selected.c}"]`
+    );
+    if (el) {
+        el.focus();
+        el.scrollIntoView({ block: "nearest", inline: "nearest" });
+    }
+}
+
+/* ------------------------------------------------------------------ */
+/* Thêm / xoá hàng, cột                                               */
+/* ------------------------------------------------------------------ */
+
+function pushUndo() {
+    undoStack.push(JSON.stringify(currentData));
+    if (undoStack.length > 30) undoStack.shift();
+}
+
+function commit() {
+    dirty = true;
+    refresh();
+    focusSelected();
+}
+
+function needSelection() {
+    if (selected) return true;
+    alert("Hãy click vào một ô trước.");
+    return false;
+}
+
+const actions = {
+    addRowAbove() {
+        addRow("above");
+    },
+    addRowBelow() {
+        addRow("below");
+    },
+    deleteRow,
+    addColLeft() {
+        addCol("left");
+    },
+    addColRight() {
+        addCol("right");
+    },
+    deleteCol,
+    undo,
+};
+
+function addRow(where) {
+    if (!currentData.length) return;
+    pushUndo();
+
+    const cols = currentData[0].length;
+    let idx;
+
+    if (!selected) {
+        idx = currentData.length; // không chọn ô nào → thêm vào cuối
+    } else {
+        idx = where === "above" ? selected.r : selected.r + 1;
+        idx = Math.max(1, idx); // không chèn lên trên dòng tiêu đề
     }
 
-    let s =
-        String(cell);
+    currentData.splice(idx, 0, Array(cols).fill(""));
+    selected = { r: idx, c: selected ? Math.min(selected.c, cols - 1) : 0 };
+    commit();
+}
 
-    /*
-        normalize newline
-    */
+function deleteRow() {
+    if (!needSelection()) return;
 
-    s = s.replace(
-        /\r\n/g,
-        '\n'
-    );
+    if (selected.r === 0 && !confirm("Đây là dòng tiêu đề. Vẫn xoá?")) return;
 
-    s = s.replace(
-        /\r/g,
-        '\n'
-    );
+    pushUndo();
+    currentData.splice(selected.r, 1);
 
-    /*
-        Excel Formula Injection
-    */
+    selected = currentData.length
+        ? { r: Math.min(selected.r, currentData.length - 1), c: selected.c }
+        : null;
 
-    //if (
-     //   /^[=+\-@]/.test(
-    //        s
-    //    )
-    //) {
+    commit();
+}
 
-     //   s = "'" + s;
-   // }
+function addCol(where) {
+    if (!currentData.length) return;
+    pushUndo();
 
-    /*
-        RFC4180 quote escape
-    */
+    const colCount = currentData[0].length;
+    let idx;
 
-    s = s.replace(
-        /"/g,
-        '""'
-    );
+    if (!selected) {
+        idx = colCount;
+    } else {
+        idx = where === "left" ? selected.c : selected.c + 1;
+    }
 
-    /*
-        need quoting ?
-    */
+    currentData.forEach((row) => {
+        while (row.length < idx) row.push(""); // dòng bị thiếu cột thì bù cho đủ
+        row.splice(idx, 0, "");
+    });
 
-    const needQuote =
+    selected = { r: selected ? selected.r : 0, c: idx };
+    commit();
+}
 
-        s.includes(
-            delimiter
-        )
+function deleteCol() {
+    if (!needSelection()) return;
 
-        ||
+    if ((currentData[0]?.length || 0) <= 1) {
+        alert("Không thể xoá cột cuối cùng.");
+        return;
+    }
 
-        s.includes('"')
+    pushUndo();
+    const c = selected.c;
 
-        ||
+    currentData.forEach((row) => {
+        if (c < row.length) row.splice(c, 1);
+    });
 
-        s.includes('\n')
+    selected = { r: selected.r, c: Math.min(c, currentData[0].length - 1) };
+    commit();
+}
 
-        ||
+function undo() {
+    const snap = undoStack.pop();
+    if (!snap) return;
 
-        s.includes('\t')
+    currentData = JSON.parse(snap);
 
-        ||
+    if (selected) {
+        selected.r = Math.min(selected.r, Math.max(currentData.length - 1, 0));
+        selected.c = Math.min(selected.c, Math.max((currentData[0]?.length || 1) - 1, 0));
+    }
 
-        /^\s|\s$/.test(
-            s
+    commit();
+}
+
+/* ------------------------------------------------------------------ */
+/* Download                                                           */
+/* ------------------------------------------------------------------ */
+
+/* Tìm các ký tự không có trong encoding đích (sẽ bị đổi thành "?") */
+function findUnmappable(text, mode) {
+    const bad = [];
+
+    for (const ch of new Set(text)) {
+        if (ch.charCodeAt(0) < 0x80) continue;
+
+        const enc = Encoding.convert(Encoding.stringToCode(ch), {
+            to: mode,
+            from: "UNICODE",
+        });
+        const dec = Encoding.codeToString(
+            Encoding.convert(enc, { to: "UNICODE", from: mode })
         );
 
-    if (
-        needQuote
-    ) {
-
-        s = `"${s}"`;
+        if (dec !== ch) bad.push(ch);
     }
 
-    return s;
+    return bad;
 }
 
 function downloadCSV() {
-
-    const delimiter = ',';
-
-    const csvContent =
-
-        currentData
-
-            .map(
-
-                row =>
-
-                    row.map(
-
-                        cell =>
-
-                            escapeCSV(
-                                cell,
-                                delimiter
-                            )
-
-                    )
-
-                        .join(
-                            delimiter
-                        )
-
-            )
-
-            .join('\r\n');
-
-    const mode =
-        encodingSelect.value;
-
-    let bytes;
+    const mode = outputEncoding.value;
+    const csv = toCSV();
+    let parts;
 
     switch (mode) {
-
-        case 'UTF8':
-
-            bytes =
-
-                new TextEncoder()
-
-                    .encode(
-                        csvContent
-                    );
-
+        case "UTF8":
+            parts = [new TextEncoder().encode(csv)];
             break;
 
-        case 'UTF8_BOM':
+        case "UTF8_BOM":
+            parts = [new Uint8Array([0xEF, 0xBB, 0xBF]), new TextEncoder().encode(csv)];
+            break;
 
-            {
+        case "SJIS":
+        case "EUCJP": {
+            const bad = findUnmappable(csv, mode);
 
-                const body =
-
-                    new TextEncoder()
-
-                        .encode(
-                            csvContent
-                        );
-
-                bytes =
-
-                    new Uint8Array(
-
-                        [
-                            0xEF,
-                            0xBB,
-                            0xBF,
-                            ...body
-                        ]
-
-                    );
+            if (bad.length) {
+                const list = bad.slice(0, 30).join(" ") + (bad.length > 30 ? " ..." : "");
+                const ok = confirm(
+                    `Các ký tự sau không có trong ${mode} và sẽ bị thay bằng "?":\n\n${list}\n\nVẫn tải file?`
+                );
+                if (!ok) return;
             }
 
+            const encoded = Encoding.convert(Encoding.stringToCode(csv), {
+                to: mode,
+                from: "UNICODE",
+            });
+            parts = [new Uint8Array(encoded)];
             break;
-
-        case 'SJIS':
-
-        case 'EUCJP':
-
-            {
-
-                const encoded =
-
-                    Encoding.convert(
-
-                        Encoding
-                            .stringToCode(
-                                csvContent
-                            ),
-
-                        {
-                            to: mode,
-
-                            from: 'UNICODE'
-                        }
-                    );
-
-                bytes =
-
-                    new Uint8Array(
-                        encoded
-                    );
-            }
-
-            break;
+        }
 
         default:
-
-            alert(
-                'Unsupported encoding'
-            );
-
+            alert("Unsupported encoding");
             return;
     }
 
-    const blob =
+    const blob = new Blob(parts, { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
 
-        new Blob(
-
-            [bytes],
-
-            {
-                type:
-                    `text/csv;charset=${mode}`
-            }
-        );
-
-    const url =
-
-        URL.createObjectURL(
-            blob
-        );
-
-    const a =
-        document.createElement(
-            'a'
-        );
-
+    const base = fileName ? fileName.replace(/\.[^.]+$/, "") : "csv";
+    const a = document.createElement("a");
     a.href = url;
+    a.download = `${base}_edited.csv`;
 
-    a.download =
-
-        `csv_${Date.now()
-        }.csv`;
-
-    document.body
-        .appendChild(a);
-
+    document.body.appendChild(a);
     a.click();
-
     a.remove();
+    URL.revokeObjectURL(url);
 
-    URL.revokeObjectURL(
-        url
-    );
+    dirty = false;
 }
 
+/* ------------------------------------------------------------------ */
+/* Clear                                                              */
+/* ------------------------------------------------------------------ */
+
 function clearData() {
+    if (dirty && !confirm("Dữ liệu đã chỉnh sửa chưa tải về sẽ bị mất. Tiếp tục?")) return;
 
     currentData = [];
+    fileBuffer = null;
+    fileName = "";
+    selected = null;
+    undoStack = [];
+    dirty = false;
+    parseWarning = "";
+    loadedEncoding = "";
 
-    tableContainer.innerHTML = '';
+    tableContainer.innerHTML = "";
+    warningDiv.innerHTML = "";
+    stats.innerHTML = "";
+    fileInput.value = "";
 
-    warningDiv.innerHTML = '';
-
-    stats.innerHTML = '';
-
-    fileInput.value = '';
-
-    downloadBtn.disabled = true;
-    clearBtn.disabled = true;
+    updateControls();
 }
